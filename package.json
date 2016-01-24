@@ -1,24 +1,19 @@
 {
   "name": "iobroker.yamaha",
-  "description": "Remote Control for Yamaha Receivers",
-  "version": "0.0.2",
+  "version": "0.0.6",
+  "description": "ioBroker yamaha Adapter",
+  "author": {
+    "name": "soef",
+    "email": "soef@gmx.net"
+  },
   "contributors": [
     {
       "name": "soef",
       "email": "soef@gmx.net"
     }
   ],
-  "homepage": "https://github.com/ioBroker/ioBroker.yamaha",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ioBroker/ioBroker.yamaha.git"
-  },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/ioBroker/ioBroker.yamaha/blob/master/LICENSE"
-    }
-  ],
+  "homepage": "https://github.com/soef/iobroker.yamaha",
+  "license": "MIT",
   "keywords": [
     "ioBroker",
     "yamaha",
@@ -28,38 +23,12 @@
   "dependencies": {
     "yamaha-nodejs": "^0.4.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soef/iobroker.yamaha"
+  },
   "bugs": {
     "url": "https://github.com/soef/iobroker.yamaha/issues"
   },
-  "main": "yamaha.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": {
-    "name": "soef",
-    "email": "soef@gmx.net"
-  },
-  "license": "MIT",
-  "gitHead": "0e4b156771bcbd53d2d33f2deb3ad45105819bae",
-  "_id": "iobroker.yamaha@0.0.2",
-  "_shasum": "8a6cb4950dfb18985bfef43467daaf42131e0c41",
-  "_from": "iobroker.yamaha@*",
-  "_npmVersion": "2.11.3",
-  "_nodeVersion": "0.12.7",
-  "_npmUser": {
-    "name": "bluefox",
-    "email": "dogafox@gmail.com"
-  },
-  "maintainers": [
-    {
-      "name": "bluefox",
-      "email": "dogafox@gmail.com"
-    }
-  ],
-  "dist": {
-    "shasum": "8a6cb4950dfb18985bfef43467daaf42131e0c41",
-    "tarball": "http://registry.npmjs.org/iobroker.yamaha/-/iobroker.yr-0.0.1.tgz"
-  },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/iobroker.yamaha/-/iobroker.yr-0.0.1.tgz"
+  "readmeFilename": "README.md"
 }
