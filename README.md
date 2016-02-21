@@ -1,5 +1,5 @@
 ![Logo](admin/yamaha.png)
-# ioBroker.yamaha
+## ioBroker.yamaha
 
 Adapter for Yamaha AV receivers
 
@@ -20,12 +20,13 @@ npm install iobroker.yamaha
 
 #### Requirements
 Yamaha Reciver
+
 You have to enable "network standby" function in the configuration of your receiver
 
 ### License
 The MIT License (MIT)
 
-Copyright (c) 2015 soef <soef@gmx.net>
+Copyright (c) 2015-2016 soef <soef@gmx.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
