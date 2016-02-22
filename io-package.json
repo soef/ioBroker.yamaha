@@ -1,32 +1,247 @@
 {
-    "common": {
-        "name":                     "sonos",
-        "version":                  "0.1.7",
-        "title":                    "SONOS Adapter",
-        "desc":                     "This adapter allows to monitor and control SONOS players from ioBroker",
-        "authors":                  ["bluefox <bluefox@ccu.io>"],
-        "license":                  "MIT",
-        "platform":                 "Javascript/Node.js",
-        "mode":                     "daemon",
-        "loglevel":                 "info",
-        "messagebox":               true,
-        "readme":                   "https://github.com/ioBroker/ioBroker.sonos/blob/master/README.md",
-        "enabled":                  true,
-        "icon":                     "sonos.png",
-        "keywords":                 ["sonos", "player", "music"],
-        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.sonos/master/admin/sonos.png",
-        "localLink":                "http://%ip%:%webserverPort%",
-		"type":                     "media"
-    },
-    "native": {
-        "webserverEnabled": true,
-        "webserverPort":    8083,
-        "elapsedInterval":  2000,
-        "devices": [
-            {"name": "Sonos1", "ip" : "0.0.0.0", "room": ""}
-        ]
-    },
-    "objects": [
 
-    ]
+  "common": {
+    "name": "yamaha",
+    "version": "0.1.1",
+    "title": "Yamaha",
+    "desc": "Yamaha AVR Adapter",
+    "platform": "Javascript/Node.js",
+    "mode": "daemon",
+    "icon": "yamaha.png",
+    "extIcon": "https://raw.githubusercontent.com/soef/iobroker.yamaha/master/admin/yamaha.png",
+    "readme": "https://github.com/soef/iobroker.yamaha/blob/master/README.md",
+    "license": "MIT",
+    "loglevel": "info",
+    "keywords": [ "yamaha", "avr", "receiver" ],
+    "enabled": true,
+    "type": "hardware"
+  },
+  "native": {
+    "ip": "",
+    "intervall": 120
+  },
+  "objects": [
+  ],
+  "instanceObjects": [
+    {
+      "_id": "Commands",
+      "type": "channel",
+      "common": {
+        "role": "Commands",
+        "name": ""
+      },
+      "native": { }
+    },
+    {
+      "_id": "SystemConfig",
+      "type": "channel",
+      "common": {
+        "role": "SystemConfig",
+        "name": ""
+      },
+      "native": { }
+    },
+    {
+      "_id": "SystemConfig.name",
+      "type": "state",
+      "common": {
+        "name": "Name",
+        "type": "string",
+        "role": "systemconfig.name",
+        "read": true,
+        "write": false,
+        "def": null,
+        "desc": "Version"
+      },
+      "native": { }
+    },
+    {
+      "_id": "SystemConfig.version",
+      "type": "state",
+      "common": {
+        "name": "Version",
+        "type": "string",
+        "role": "systemconfig.version",
+        "read": true,
+        "write": false,
+        "def": null,
+        "desc": "Version"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.xmlCommand",
+      "type": "state",
+      "common": {
+        "name": "XML Command",
+        "type": "string",
+        "role": "media.xmlCommand",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "XML Command (eg. <Main_Zone><Volume><Mute>On</Mute></Volume></Main_Zone>)"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.command",
+      "type": "state",
+      "common": {
+        "name": "Command",
+        "type": "string",
+        "role": "media.command",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Command (eg. volumeUp 100)"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.webradio",
+      "type": "state",
+      "common": {
+        "name": "WebRadio",
+        "type": "string",
+        "role": "media.webradio",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Internet Radiosender selektieren"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.volumeUp",
+      "type": "state",
+      "common": {
+        "name": "Volume Up",
+        "type": "integer",
+        "role": "media.volumeUp",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Volume Up"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.volumeDown",
+      "type": "state",
+      "common": {
+        "name": "Volume Down",
+        "type": "integer",
+        "role": "media.volumeDown",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Volume Down"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.adjustVolume",
+      "type": "state",
+      "common": {
+        "name": "Adjust Volume",
+        "type": "integer",
+        "role": "media.adjustVolume",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Adjust Volume"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.toggleMute",
+      "type": "state",
+      "common": {
+        "name": "Toggle Mute",
+        "type": "integer",
+        "role": "media.toggleMute",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Toggle Mute"
+      },
+      "native": { }
+    },
+    {
+      "_id": "volume",
+      "type": "state",
+      "common": {
+        "name": "Volume",
+        "type": "integer",
+        "role": "media.volume",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Volume"
+      },
+      "native": { }
+    },
+    {
+      "_id": "input",
+      "type": "state",
+      "common": {
+        "name": "Input",
+        "type": "string",
+        "role": "media.input",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Input"
+      },
+      "native": {
+        "values": [ "AV1", "AV2" ]
+      }
+    },
+    {
+      "_id": "surround",
+      "type": "state",
+      "common": {
+        "name": "Surround Program",
+        "type": "string",
+        "role": "media.input",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Surround"
+      },
+      "native": {
+        "values": [ "AV1", "AV2" ]
+      }
+    },
+    {
+      "_id": "mute",
+      "type": "state",
+      "common": {
+        "name": "Mute",
+        "type": "boolean",
+        "role": "media.mute",
+        "read": true,
+        "write": true,
+        "def": null,
+        "desc": "Mute"
+      },
+      "native": { }
+    },
+    {
+      "_id": "power",
+      "type": "state",
+      "common": {
+        "name": "Power",
+        "type": "boolean",
+        "role": "media.power",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Power"
+      },
+      "native": { }
+    }
+  ]
 }
