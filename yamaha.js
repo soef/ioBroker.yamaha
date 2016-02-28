@@ -230,7 +230,8 @@ function discoverReceiver(callback) {
         }
         var ip = '';
         var prefixIP = add.split('.', 3).join('.') + '.';
-        var request = require('./node_modules/yamaha-nodejs/node_modules/request');
+        //var request = require('./node_modules/yamaha-nodejs/node_modules/request');
+        var request = require('request');
         adapter.log.info('Own IP: ' + add + ' Range: ' + prefixIP + '1..255');
         for (var i = 1; i < 255; i++) {
             if (ip) break;
