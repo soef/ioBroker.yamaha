@@ -4,7 +4,6 @@ var utils = require(__dirname + '/lib/utils');
 var soef = require(__dirname + '/lib/soef'),
     devices = new soef.Devices();
 
-//var YamahaAPI = require("yamaha-nodejs");
 var YAMAHA = require("yamaha-nodejs");
 var yamaha;
 
@@ -18,24 +17,18 @@ var adapter = utils.adapter({
             callback();
         }
     },
-    //discover: function (callback) {
-    //},
     install: function (callback) {
         log("adapter.on(install)");
-        adapter.getStatesOf(function (err, objs) {
-            if (objs) {
-                for (var i = 0; i < objs.length; i++) {
-                    log(objs[i]._id);
-                    adapter.setState(objs[i]._id, { val: "", ack: false });
-                }
-            }
-        });
+        //
+        //adapter.getStatesOf(function (err, objs) {
+        //    if (objs) {
+        //        for (var i = 0; i < objs.length; i++) {
+        //            log(objs[i]._id);
+        //            adapter.setState(objs[i]._id, { val: "", ack: false });
+        //        }
+        //    }
+        //});
     },
-    //uninstall: function (callback) {
-    //},
-    //objectChange: function (id, obj) {
-    //    //adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
-    //},
     stateChange: function (id, state) {
         if (state && !state.ack) {
             yamaha.execCommand(id, state.val);
@@ -43,22 +36,40 @@ var adapter = utils.adapter({
     },
     ready: function () {
         devices.init(adapter, function(err) {
+
+            /*
+            var dev = new devices.CDevice('Device1', "Device No 1");
+            dev.set('device1-state-bool1', true);
+            dev.set('device1-state-string', "string");
+            dev.set('device1-state-number', 123);
+            dev.setChannel('channel1', "def erste Kanal");
+            dev.set('device1-channel1-state-bool1', true);
+            dev.set('device1-channel1-state-string', "string");
+            dev.set('device1-channel1-state-number', 123);
+            dev.setChannel('');
+            dev.set('state-string', "root string");
+            dev.setDevice('device2');
+            dev.set('device2-state-bool', true);
+            dev.set('.root', 'root');
+            dev.update();
+            return;
+             */
+
             main();
         });
+    },
+    discover: function (callback) {
+    },
+    uninstall: function (callback) {
+    },
+    objectChange: function (id, obj) {
+        //adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
     }
 });
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//function YAMAHA (ip) {
-//    //this.constructor(ip);
-//    YamahaAPI.call(this, ip);
-//}
-
-//var YAMAHA = YamahaAPI;
-
-//YAMAHA.prototype = new YamahaAPI();
 YAMAHA.prototype.setMute = function (to) {
     var command = '<YAMAHA_AV cmd="PUT"><Main_Zone><Volume><Mute>' + (to ? "On" : "Off") + '</Mute></Volume></Main_Zone></YAMAHA_AV>';
     return this.SendXMLToReceiver(command);
@@ -130,9 +141,8 @@ YAMAHA.prototype.execCommand = function (id, val) {
 
 function updateStates() {
     yamaha.getBasicInfo().done(function (v) {
-        //adapter.log.debug ("getBasicInfo " + JSON.stringify(v));
-
-        var dev = new devices.CState('');
+        var dev = devices.root; //new devices.CDevice('');
+        dev.setChannel();
         dev.set("input", v.getCurrentInput());
         dev.set("volume", v.getVolume());
         dev.set("mute", v.isMuted());
@@ -140,16 +150,40 @@ function updateStates() {
         dev.set("surround", v.YAMAHA_AV.Main_Zone[0].Basic_Status[0].Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
         dev.update();
 
-
         var intervall = adapter.config.intervall >> 0;
-        //if (adapter.config.intervall !== undefined && adapter.config.intervall !== 0) {
         if (intervall) {
             setTimeout(updateStates, intervall * 1000);
         }
     });
 }
 
+function repairObjects(callback) {
+    var reread = false;
+    forEachObjSync(adapter.ioPack.instanceObjects,
+        function(obj, doit) {
+            adapter.getObject(obj._id, {}, function(err,o) {
+                if (o) {
+                    doit(0);
+                    return;
+                }
+                adapter.setObject(obj._id, obj, {}, function (err, o) {
+                    reread = true;
+                    doit(0);
+                });
+            });
+        },
+        function (err) {
+            if (reread) {
+                devices.readAllExistingObjects();
+            }
+            safeCallback(callback, 0);
+        }
+    )
+}
+
+
 function repairConfig () {
+    repairObjects();
     if (!adapter.config['IP'] && !adapter.config['Intervall']) {
         return;
     }
@@ -189,6 +223,7 @@ function discoverReceiver(callback) {
         });
     }
 
+    adapter.log.info('No IP configurated, trying to find a device...');
     require('dns').lookup(require('os').hostname(), function (err, add, fam) {
         if (err || !add) {
             return;
@@ -196,6 +231,7 @@ function discoverReceiver(callback) {
         var ip = '';
         var prefixIP = add.split('.', 3).join('.') + '.';
         var request = require('./node_modules/yamaha-nodejs/node_modules/request');
+        adapter.log.info('Own IP: ' + add + ' Range: ' + prefixIP + '1..255');
         for (var i = 1; i < 255; i++) {
             if (ip) break;
             request.post(
@@ -240,7 +276,7 @@ function main() {
     checkIP(function() {
         yamaha = new YAMAHA(adapter.config.ip);
 
-        updateStates();
+        setTimeout(updateStates, 1000);
 
         adapter.subscribeStates('*');
 
@@ -255,6 +291,7 @@ function main() {
             adapter.log.debug("getAvailableInputs: " + JSON.stringify(v));
             var inputs = v;
             adapter.getObject("input", function (err, obj) {
+                if (err || !obj) return;
                 obj.native.values = inputs + [, "AirPlay", "NET_RADIO", "Napster", "Spotify"];
                 adapter.setObject("input", obj);
             })
@@ -262,7 +299,7 @@ function main() {
 
         yamaha.getSystemConfig().done(function (v) {
             adapter.log.debug("getSystemConfig: " + JSON.stringify(v));
-            var dev = new devices.CState('SystemConfig');
+            var dev = new devices.CDevice('SystemConfig');
             dev.set("name", v.YAMAHA_AV.System[0].Config[0].Model_Name[0]);
             dev.set("version", v.YAMAHA_AV.System[0].Config[0].Version[0]);
             dev.update();
