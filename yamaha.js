@@ -36,25 +36,6 @@ var adapter = utils.adapter({
     },
     ready: function () {
         devices.init(adapter, function(err) {
-
-            /*
-            var dev = new devices.CDevice('Device1', "Device No 1");
-            dev.set('device1-state-bool1', true);
-            dev.set('device1-state-string', "string");
-            dev.set('device1-state-number', 123);
-            dev.setChannel('channel1', "def erste Kanal");
-            dev.set('device1-channel1-state-bool1', true);
-            dev.set('device1-channel1-state-string', "string");
-            dev.set('device1-channel1-state-number', 123);
-            dev.setChannel('');
-            dev.set('state-string', "root string");
-            dev.setDevice('device2');
-            dev.set('device2-state-bool', true);
-            dev.set('.root', 'root');
-            dev.update();
-            return;
-             */
-
             main();
         });
     },
@@ -213,6 +194,8 @@ function repairConfig () {
 
 function discoverReceiver(callback) {
 
+    var ip = '';
+
     function saveFoundIP(ip, callback) {
         adapter.getForeignObject("system.adapter." + adapter.namespace, function (err, obj) {
             obj.native.ip = ip;
@@ -223,18 +206,34 @@ function discoverReceiver(callback) {
         });
     }
 
-    adapter.log.info('No IP configurated, trying to find a device...');
-    require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-        if (err || !add) {
-            return;
+    function getIPAddress() {
+        // found on stackoverflow
+        var interfaces = require('os').networkInterfaces();
+        for (var devName in interfaces) {
+            var iface = interfaces[devName];
+
+            for (var i = 0; i < iface.length; i++) {
+                var alias = iface[i];
+                if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+                    return alias.address;
+            }
         }
-        var ip = '';
-        var prefixIP = add.split('.', 3).join('.') + '.';
-        //var request = require('./node_modules/yamaha-nodejs/node_modules/request');
-        var request = require('request');
-        adapter.log.info('Own IP: ' + add + ' Range: ' + prefixIP + '1..255');
-        for (var i = 1; i < 255; i++) {
-            if (ip) break;
+        return '0.0.0.0';
+    }
+
+    adapter.log.info('No IP configurated, trying to find a device...');
+    var ownip = getIPAddress();
+    if (ownip === '0.0.0.0') {
+        return;
+    }
+    var prefixIP = ownip.split('.', 3).join('.') + '.';
+    var request = require('request');
+    var i = 1;
+
+    adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
+
+    function doRequest() {
+        if (!ip && i < 255) {
             request.post(
                 {
                     timeout: 200,
@@ -254,10 +253,13 @@ function discoverReceiver(callback) {
                         }
                         saveFoundIP(ip, callback);
                     }
+                    i++;
+                    setTimeout(doRequest, 0);
                 }
             );
         }
-    });
+    }
+    doRequest();
 }
 
 function checkIP(callback) {
