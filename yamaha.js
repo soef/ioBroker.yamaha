@@ -474,6 +474,7 @@ function repairConfig () {
 function discoverReceiver(callback) {
 
     var ip = '';
+    var ips = [];
 
     function saveFoundIP(ip, callback) {
         adapter.getForeignObject("system.adapter." + adapter.namespace, function (err, obj) {
@@ -485,7 +486,7 @@ function discoverReceiver(callback) {
         });
     }
 
-    function getIPAddress() {
+    function getIPAddresses() {
         // found on stackoverflow
         var interfaces = require('os').networkInterfaces();
         for (var devName in interfaces) {
@@ -494,51 +495,60 @@ function discoverReceiver(callback) {
             for (var i = 0; i < iface.length; i++) {
                 var alias = iface[i];
                 if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
-                    return alias.address;
+                    ips.push(alias.address);
+                    //return alias.address;
             }
         }
-        return '0.0.0.0';
+        //return '0.0.0.0';
     }
 
     adapter.log.info('No IP configurated, trying to find a device...');
-    var ownip = getIPAddress();
-    if (ownip === '0.0.0.0') {
+    getIPAddresses();
+    if (ips.length <= 0) {
         return;
     }
-    var prefixIP = ownip.split('.', 3).join('.') + '.';
-    var request = require('request');
-    var i = 1;
 
-    adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
+    function check() {
+        var ownip = ips.pop();
+        var prefixIP = ownip.split('.', 3).join('.') + '.';
+        var request = require('request');
+        var i = 1;
 
-    function doRequest() {
-        if (!ip && i < 255) {
-            request.post(
-                {
-                    timeout: 200,
-                    method: 'POST',
-                    uri: 'http://' + prefixIP + i + '/YamahaRemoteControl/ctrl',
-                    body: '<YAMAHA_AV cmd="GET"><System><Config>GetParam</Config></System></YAMAHA_AV>'
-                },
-                function (err, response, body) {
-                    if (!err && response.statusCode == 200) {
-                        ip = response.request.host;
-                        var r = body.match("<Model_Name>(.*?)</Model_Name>.*?<System_ID>(.*?)</System_ID>.*?<Version>(.*?)</Version>");
-                        r = r || body.match("<Model_Name>(.*?)</Model_Name>");
-                        if (r && r.length >= 4) {
-                            adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1] + ' - System-ID: ' + r[2] + ' - Version: ' + r[3]);
-                        } else if (r && r.length >= 2) {
-                            adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1]);
+        adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
+
+        function doRequest() {
+            if (!ip && i < 255) {
+                request.post(
+                    {
+                        timeout: 200,
+                        method: 'POST',
+                        uri: 'http://' + prefixIP + i + '/YamahaRemoteControl/ctrl',
+                        body: '<YAMAHA_AV cmd="GET"><System><Config>GetParam</Config></System></YAMAHA_AV>'
+                    },
+                    function (err, response, body) {
+                        if (!err && response.statusCode == 200) {
+                            ip = response.request.host;
+                            var r = body.match("<Model_Name>(.*?)</Model_Name>.*?<System_ID>(.*?)</System_ID>.*?<Version>(.*?)</Version>");
+                            r = r || body.match("<Model_Name>(.*?)</Model_Name>");
+                            if (r && r.length >= 4) {
+                                adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1] + ' - System-ID: ' + r[2] + ' - Version: ' + r[3]);
+                            } else if (r && r.length >= 2) {
+                                adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1]);
+                            }
+                            saveFoundIP(ip, callback);
                         }
-                        saveFoundIP(ip, callback);
+                        i++;
+                        setTimeout(doRequest, 0);
                     }
-                    i++;
-                    setTimeout(doRequest, 0);
-                }
-            );
+                );
+            } else {
+                if (ips.length && !ip) setTimeout(check, 0);
+            }
         }
+
+        doRequest();
     }
-    doRequest();
+    check();
 }
 
 function checkIP(callback) {
