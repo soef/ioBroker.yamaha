@@ -2,7 +2,7 @@
 
   "common": {
     "name": "yamaha",
-    "version": "0.1.5",
+    "version": "0.1.7",
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",
@@ -203,10 +203,10 @@
       "common": {
         "name": "Surround Program",
         "type": "string",
-        "role": "media.input",
+        "role": "state",
         "read": true,
         "write": true,
-        "def": null,
+        "def": "Action Game",
         "desc": "Surround"
       },
       "native": {
@@ -244,6 +244,472 @@
         "desc": "Power"
       },
       "native": { }
+    },
+    {
+      "_id": "refresh",
+      "type": "state",
+      "common": {
+        "name": "Refresh",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Refresh states now"
+      },
+      "native": { }
+    },
+    {
+    "_id": "Commands.stop",
+    "type": "state",
+    "common": {
+      "name": "Stop",
+      "type": "boolean",
+      "role": "media.stop",
+      "read": true,
+      "write": true,
+      "min": false,
+      "max": true,
+      "def": null,
+      "desc": "Stop"
+    },
+    "native": { }
+    },
+    {
+      "_id": "Commands.pause",
+      "type": "state",
+      "common": {
+        "name": "Pause",
+        "type": "boolean",
+        "role": "media.pause",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Pause"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.skip",
+      "type": "state",
+      "common": {
+        "name": "Skip",
+        "type": "boolean",
+        "role": "media.skip",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Skip"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.rewind",
+      "type": "state",
+      "common": {
+        "name": "Rewind",
+        "type": "boolean",
+        "role": "media.rewind",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Rewind"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.skip",
+      "type": "state",
+      "common": {
+        "name": "Skip",
+        "type": "boolean",
+        "role": "media.skip",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Skip"
+      },
+      "native": { }
+    },
+    {
+      "_id": "YPAOVolume",
+      "type": "state",
+      "common": {
+        "name": "YPAOVolume",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "YPAO Volume"
+      },
+      "native": { }
+    },
+    {
+      "_id": "extraBass",
+      "type": "state",
+      "common": {
+        "name": "extraBass",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Extra Bass"
+      },
+      "native": { }
+    },
+    {
+      "_id": "adaptiveDRC",
+      "type": "state",
+      "common": {
+        "name": "adaptiveDRC",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Adaptive DRC"
+      },
+      "native": { }
+    },
+    {
+      "_id": "partyMode",
+      "type": "state",
+      "common": {
+        "name": "partyMode",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Party Mode"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.partyModeVolumeUp",
+      "type": "state",
+      "common": {
+        "name": "partyModeVoulumeUp",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Party Mode Volume Up"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.partyModeVolumeDown",
+      "type": "state",
+      "common": {
+        "name": "partyModeVolumeDown",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Party Mode Volume Down"
+      },
+      "native": { }
+    },
+    {
+      "_id": "hdmiOut1",
+      "type": "state",
+      "common": {
+        "name": "hdmiOut1",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "HDMI-1 Output"
+      },
+      "native": { }
+    },
+    {
+      "_id": "hdmiOut2",
+      "type": "state",
+      "common": {
+        "name": "hdmiOut2",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "HDMI-2 Output"
+      },
+      "native": { }
+    },
+    {
+      "_id": "pureDirect",
+      "type": "state",
+      "common": {
+        "name": "pureDirect",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": null,
+        "desc": "Pure Direct"
+      },
+      "native": { }
+    },
+    {
+      "_id": "bass",
+      "type": "state",
+      "common": {
+        "name": "bass",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": -60,
+        "max": 60,
+        "def": null,
+        "desc": "Set Bass to (-60..60)",
+        "func": "setBassTo"
+      },
+      "native": { }
+    },
+    {
+      "_id": "treble",
+      "type": "state",
+      "common": {
+        "name": "treble",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": -60,
+        "max": 60,
+        "def": null,
+        "desc": "Set Treble to (-60..60)"
+      },
+      "native": { }
+    },
+    {
+      "_id": "subwooferLevel",
+      "type": "state",
+      "common": {
+        "name": "subwooferLevel",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": -60,
+        "max": 60,
+        "def": null,
+        "desc": "Set Subwoofer Trim To"
+      },
+      "native": { }
+    },
+    {
+      "_id": "dialogLift",
+      "type": "state",
+      "common": {
+        "name": "dialogLift",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": 0,
+        "max": 5,
+        "def": null,
+        "desc": "Set Dialog Lift To (0..5)"
+      },
+      "native": { }
+    },
+    {
+      "_id": "dialogLevel",
+      "type": "state",
+      "common": {
+        "name": "dialogLevel",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": 0,
+        "max": 3,
+        "def": null,
+        "desc": "Set Dialog Level To (0..3)"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.InputTo",
+      "type": "state",
+      "common": {
+        "name": "InputTo",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": 0,
+        "max": 3,
+        "def": null,
+        "desc": "Set Input of Zone To"
+      },
+      "native": { }
+    },
+    {
+      "_id": "scene",
+      "type": "state",
+      "common": {
+        "name": "scene",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": 1,
+        "max": 12,
+        "def": 1,
+        "desc": "Scene"
+      },
+      "native": { }
+    },
+    {
+      "_id": "Commands.zone",
+      "type": "state",
+      "common": {
+        "name": "zone",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": 1,
+        "max": 4,
+        "def": 1,
+        "desc": "Zone"
+      },
+      "native": { }
+    },
+    {
+      "_id": "zone1",
+      "type": "state",
+      "common": {
+        "name": "zone1",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": true,
+        "desc": "Power Zone 1"
+      },
+      "native": { }
+    },
+    {
+      "_id": "zone2",
+      "type": "state",
+      "common": {
+        "name": "zone2",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": false,
+        "desc": "Power Zone 2"
+      },
+      "native": { }
+    },
+    {
+      "_id": "zone3",
+      "type": "state",
+      "common": {
+        "name": "zone3",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": false,
+        "desc": "Power Zone 3"
+      },
+      "native": { }
+    },
+    {
+      "_id": "zone4",
+      "type": "state",
+      "common": {
+        "name": "zone4",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": false,
+        "desc": "Power Zone 4"
+      },
+      "native": { }
+    },
+    {
+      "_id": "allZones",
+      "type": "state",
+      "common": {
+        "name": "allZones",
+        "type": "boolean",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": false,
+        "desc": "Power all Zones"
+      },
+      "native": { }
+    },
+    {
+      "_id": "sleep",
+      "type": "state",
+      "common": {
+        "name": "sleep",
+        "type": "number",
+        "role": "state",
+        "read": true,
+        "write": true,
+        "min": 0,
+        "max": 120,
+        "def": 0,
+        "desc": "Sleep"
+      },
+      "native": { }
     }
+
   ]
 }
