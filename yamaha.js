@@ -403,7 +403,16 @@ function refreshStates(cb) {
             dev.update();
         }
         safeCallback(cb);
-    }, cb);
+    }, function() {
+        if(devices.get('power').val) {
+            var dev = devices.root;
+            dev.setChannel();
+            dev.set("power", false);
+            dev.set("zone1", false);
+            dev.update();
+        }
+        cb();
+    });
 }
 
 

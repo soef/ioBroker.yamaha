@@ -2,14 +2,14 @@
 
   "common": {
     "name": "yamaha",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "icon": "yamaha.png",
-    "extIcon": "https://raw.githubusercontent.com/soef/iobroker.yamaha/master/admin/yamaha.png",
-    "readme": "https://github.com/soef/iobroker.yamaha/blob/master/README.md",
+    "extIcon": "https://raw.githubusercontent.com/soef/ioBroker.yamaha/master/admin/yamaha.png",
+    "readme": "https://github.com/soef/ioBroker.yamaha/blob/master/README.md",
     "license": "MIT",
     "loglevel": "info",
     "keywords": [ "yamaha", "avr", "receiver" ],
