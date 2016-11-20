@@ -59,36 +59,31 @@ function getZone(zone) {
     return "Main_Zone";
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// needed for a smaler timeout...
 /*
- request = require("request");
- var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
- var prequest = Promise.promisify(request);
- Promise.promisifyAll(prequest);
-
- var errcnt = 0;
-
- YAMAHA.prototype.xSendXMLToReceiver= function(xml){
-
- var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
- var delay = isPutCommand? this.responseDelay*1000:0;
- return prequest.postAsync({
- method: 'POST',
- uri: 'http://'+this.ip+'/YamahaRemoteControl/ctrl',
- timeout: 1500,
- body:xml
- }).delay(delay).then(function(response) {
- errcnt = 0;
- return response.body;
- }).catch(function(e) {
- if (errcnt++ === 0) {
- //var stack = error.stack; //();get stack
- adapter.log.error(JSON.stringify(error.message));
- }
- });
- };
- */
+request = require("request");
+var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
+var prequest = Promise.promisify(request);
+Promise.promisifyAll(prequest);
+var errcnt = 0;
+YAMAHA.prototype.xSendXMLToReceiver= function(xml){
+    var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
+    var delay = isPutCommand? this.responseDelay*1000:0;
+    return prequest.postAsync({
+        method: 'POST',
+        uri: 'http://'+this.ip+'/YamahaRemoteControl/ctrl',
+        timeout: 1500,
+        body:xml
+    }).delay(delay).then(function(response) {
+        errcnt = 0;
+        return response.body;
+    }).catch(function(e) {
+        if (errcnt++ === 0) {
+            //var stack = error.stack; //();get stack
+            adapter.log.error(JSON.stringify(error.message));
+        }
+    });
+};
+*/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 YAMAHA.prototype.sendCommand = function (command, zone) {
