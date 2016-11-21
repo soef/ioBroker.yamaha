@@ -1,7 +1,8 @@
 "use strict";
 
 var utils = require(__dirname + '/lib/utils');
-var soef = require(__dirname + '/lib/soef'),
+//var soef = require(__dirname + '/lib/soef'),
+var soef = require('soef'),
     devices = new soef.Devices();
 
 var YAMAHA = require("yamaha-nodejs");
