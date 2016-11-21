@@ -59,18 +59,13 @@ function getZone(zone) {
     return "Main_Zone";
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// needed for a smaler timeout...
 /*
 request = require("request");
 var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
 var prequest = Promise.promisify(request);
 Promise.promisifyAll(prequest);
-
 var errcnt = 0;
-
 YAMAHA.prototype.xSendXMLToReceiver= function(xml){
-
     var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
     var delay = isPutCommand? this.responseDelay*1000:0;
     return prequest.postAsync({
@@ -93,7 +88,7 @@ YAMAHA.prototype.xSendXMLToReceiver= function(xml){
 
 YAMAHA.prototype.sendCommand = function (command, zone) {
     zone = getZone(zone);
-    var command = '<YAMAHA_AV cmd="PUT"><' + zone + '>' + command + '</'+zone+'></YAMAHA_AV>';
+    var command = '<YAMAHA_AV cmd="PUT"><' + zone + '>' + command + '</' + zone + '></YAMAHA_AV>';
     return this.SendXMLToReceiver(command);
 };
 
@@ -258,7 +253,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
     var i = as[2] === "commands" ? 3 : 2;
     var szVal = val;
     if (typeof szVal == 'number') szVal = szVal.toString();
-    
+
     switch (as [i]) {
         case "volumeup":
             this.adjustVolume(val);
@@ -396,7 +391,7 @@ function callWithCatch(origPromise, onSucess, onError){
         if (errorCount++ === 0) {
             //var stack = error.stack; //();get stack
             //adapter.log.error(JSON.stringify(error.message));
-            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip);
+            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ': ' + error);
         }
         safeCallback(onError);
     });
@@ -408,30 +403,39 @@ function refreshStates(cb) {
             var zone = 'Main_Zone';
             var dev = devices.root; //new devices.CDevice('');
             dev.setChannel();
-            dev.set("input", basicStatus.getCurrentInput());
-            dev.set("volume", basicStatus.getVolume());
-            dev.set("mute", basicStatus.isMuted());
-            dev.set("power", basicStatus.isOn());
-            dev.set("zone1", basicStatus.isOn());
-            dev.set("pureDirect", basicStatus.isPureDirectEnabled());
-            dev.set("surround", basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0].Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
-            var v = basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0].Power_Control[0].Sleep[0];
-            dev.set('sleep', (v === 'Off' ? 0 : v));
-            dev.set("partyMode", basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Party_Info[0] === "On");
-
             try {
-                dev.set('bass', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Tone[0].Bass[0].Val[0]));
-                dev.set('treble', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Tone[0].Treble[0].Val[0]));
-                dev.set('subwooferLevel', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Volume[0].Subwoofer_Trim[0].Val[0]));
-                dev.set('dialogLift', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Dialogue_Adjust[0].Dialogue_Lift[0]));
-                dev.set('dialogLevel', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Dialogue_Adjust[0].Dialogue_Lvl[0]));
-                dev.set('YPAOVolume', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].YPAO_Volume[0] !== 'Off');
-                dev.set('extraBass', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Extra_Bass[0] !== 'Off');
-                dev.set('adaptiveDRC', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Adaptive_DRC[0] !== 'Off');
+                dev.set("input",      basicStatus.getCurrentInput());
+                dev.set("volume",     basicStatus.getVolume());
+                dev.set("mute",       basicStatus.isMuted());
+                dev.set("power",      basicStatus.isOn());
+                dev.set("zone1",      basicStatus.isOn());
+                try {
+                    dev.set("pureDirect", basicStatus.isPureDirectEnabled());
+                } catch (e) {
 
-                dev.set('hdmiOut1', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].HDMI[0].Output[0].OUT_1[0] === 'On');
-                dev.set('hdmiOut2', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].HDMI[0].Output[0].OUT_2[0] === 'On');
-
+                }
+                var _basicStatus = basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0];
+                dev.set('surround',   _basicStatus.Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
+                if (_basicStatus.Power_Control && _basicStatus.Power_Control[0] && _basicStatus.Power_Control[0].Sleep) {
+                    var v = _basicStatus.Power_Control[0].Sleep[0];
+                    dev.set('sleep', (v === 'Off' ? 0 : v));
+                }
+                if (_basicStatus.Party_Info) dev.set('partyMode', _basicStatus.Party_Info[0] === "On");
+                if (_basicStatus.Volume && _basicStatus.Volume[0].Subwoofer_Trim) dev.set('subwooferLevel', parseInt(_basicStatus.Volume[0].Subwoofer_Trim[0].Val[0]));
+                if (_basicStatus.Sound_Video && _basicStatus.Sound_Video[0]) {
+                    var soundVideo = _basicStatus.Sound_Video[0];
+                    if (soundVideo.Tone) dev.set('bass',   parseInt(soundVideo.Tone[0].Bass[0].Val[0]));
+                    if (soundVideo.Tone) dev.set('treble', parseInt(soundVideo.Tone[0].Treble[0].Val[0]));
+                    if (soundVideo.Dialogue_Adjust) dev.set('dialogLift',  parseInt(soundVideo.Dialogue_Adjust[0].Dialogue_Lift[0]));
+                    if (soundVideo.Dialogue_Adjust) dev.set('dialogLevel', parseInt(soundVideo.Dialogue_Adjust[0].Dialogue_Lvl[0]));
+                    if (soundVideo.YPAO_Volume) dev.set('YPAOVolume', soundVideo.YPAO_Volume[0] !== 'Off');
+                    if (soundVideo.Extra_Bass) dev.set('extraBass', soundVideo.Extra_Bass[0] !== 'Off');
+                    if (soundVideo.SoundAdaptive_DRC_Video) dev.set('adaptiveDRC', soundVideo.Adaptive_DRC[0] !== 'Off');
+                    if (soundVideo.HDMI && soundVideo.HDMI[0] && soundVideo.HDMI[0].Output) {
+                        if (soundVideo.HDMI[0].Output[0].OUT_1) dev.set('hdmiOut1', soundVideo.HDMI[0].Output[0].OUT_1[0] === 'On');
+                        if (soundVideo.HDMI[0].Output[0].OUT_2) dev.set('hdmiOut2', soundVideo.HDMI[0].Output[0].OUT_2[0] === 'On');
+                    }
+                }
             } catch (e) {
                 //console.log(e);
             }
@@ -439,11 +443,11 @@ function refreshStates(cb) {
         }
         safeCallback(cb);
     }, function() {
-        if(typeof devices.get == 'function' && devices.get('power').val) {
+        if(typeof devices.get === 'function' && devices.get('power').val) {
             var dev = devices.root;
             dev.setChannel();
-            dev.set("power", false);
-            dev.set("zone1", false);
+            dev.set('power', false);
+            dev.set('zone1', false);
             dev.update();
         }
         cb();
@@ -539,7 +543,7 @@ function discoverReceiver(callback) {
                 var alias = iface[i];
                 if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
                     ips.push(alias.address);
-                    //return alias.address;
+                //return alias.address;
             }
         }
         //return '0.0.0.0';
