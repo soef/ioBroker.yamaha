@@ -58,36 +58,6 @@ function getZone(zone) {
     return "Main_Zone";
 }
 
-<<<<<<< HEAD
-=======
-/*
-request = require("request");
-var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
-var prequest = Promise.promisify(request);
-Promise.promisifyAll(prequest);
-var errcnt = 0;
-YAMAHA.prototype.xSendXMLToReceiver= function(xml){
-    var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
-    var delay = isPutCommand? this.responseDelay*1000:0;
-    return prequest.postAsync({
-        method: 'POST',
-        uri: 'http://'+this.ip+'/YamahaRemoteControl/ctrl',
-        timeout: 1500,
-        body:xml
-    }).delay(delay).then(function(response) {
-        errcnt = 0;
-        return response.body;
-    }).catch(function(e) {
-        if (errcnt++ === 0) {
-            //var stack = error.stack; //();get stack
-            adapter.log.error(JSON.stringify(error.message));
-        }
-    });
-};
-*/
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
->>>>>>> origin/master
 YAMAHA.prototype.sendCommand = function (command, zone) {
     zone = getZone(zone);
     var command = '<YAMAHA_AV cmd="PUT"><' + zone + '>' + command + '</' + zone + '></YAMAHA_AV>';
@@ -391,13 +361,7 @@ function callWithCatch(origPromise, onSucess, onError){
         onSucess(result);
     }).catch(function(error) {
         if (errorCount++ === 0) {
-<<<<<<< HEAD
-            adapter.log.error(JSON.stringify(error));
-=======
-            //var stack = error.stack; //();get stack
-            //adapter.log.error(JSON.stringify(error.message));
-            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ': ' + error);
->>>>>>> origin/master
+            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ': ' + error.message);
         }
         safeCallback(onError);
     });
@@ -421,7 +385,7 @@ function refreshStates(cb) {
 
                 }
                 var _basicStatus = basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0];
-                dev.set('surround',   _basicStatus.Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
+                dev.set('surround', _basicStatus.Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
                 if (_basicStatus.Power_Control && _basicStatus.Power_Control[0] && _basicStatus.Power_Control[0].Sleep) {
                     var v = _basicStatus.Power_Control[0].Sleep[0];
                     dev.set('sleep', (v === 'Off' ? 0 : v));
@@ -449,11 +413,7 @@ function refreshStates(cb) {
         }
         safeCallback(cb);
     }, function() {
-<<<<<<< HEAD
-        if(devices.get('power').val) {
-=======
         if(typeof devices.get === 'function' && devices.get('power').val) {
->>>>>>> origin/master
             var dev = devices.root;
             dev.setChannel();
             dev.set('power', false);
