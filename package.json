@@ -1,6 +1,6 @@
 {
   "name": "iobroker.yamaha",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "ioBroker yamaha Adapter",
   "author": {
     "name": "soef",
@@ -22,9 +22,10 @@
     "RX-V"
   ],
   "dependencies": {
-    "yamaha-nodejs": "^0.6.0",
-    "soef": "=0.1.7",
-    "request": "^2.40.0"
+    "peer-ssdp": "0.0.5",
+    "request": "^2.40.0",
+    "soef": "^0.1.17",
+    "yamaha-nodejs-soef": "^0.7.0"
   },
   "repository": {
     "type": "git",

@@ -1,12 +1,13 @@
 "use strict";
 
 var utils = require(__dirname + '/lib/utils');
-//var soef = require(__dirname + '/lib/soef'),
 var soef = require('soef'),
     devices = new soef.Devices();
 
-var YAMAHA = require("yamaha-nodejs");
+//var YAMAHA = require("yamaha-nodejs");
+var YAMAHA = require("yamaha-nodejs-soef");
 var yamaha;
+var request;
 
 var adapter = utils.adapter({
     name: 'yamaha',
@@ -19,16 +20,6 @@ var adapter = utils.adapter({
         }
     },
     install: function (callback) {
-        log("adapter.on(install)");
-        //
-        //adapter.getStatesOf(function (err, objs) {
-        //    if (objs) {
-        //        for (var i = 0; i < objs.length; i++) {
-        //            log(objs[i]._id);
-        //            adapter.setState(objs[i]._id, { val: "", ack: false });
-        //        }
-        //    }
-        //});
     },
     stateChange: function (id, state) {
         if (state && !state.ack) {
@@ -49,7 +40,6 @@ var adapter = utils.adapter({
     }
 });
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var zone = 'Main_Zone';
@@ -59,61 +49,96 @@ function getZone(zone) {
     return "Main_Zone";
 }
 
-YAMAHA.prototype.sendCommand = function (command, zone) {
-    zone = getZone(zone);
-    var command = '<YAMAHA_AV cmd="PUT"><' + zone + '>' + command + '</' + zone + '></YAMAHA_AV>';
-    return this.SendXMLToReceiver(command);
-};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// needed for a smaler timeout...
+/*
+request = require("request");
+var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
+var prequest = Promise.promisify(request);
+Promise.promisifyAll(prequest);
 
-YAMAHA.prototype.setMute = function (to) {
-    return this.sendCommand('<Volume><Mute>' + (to ? "On" : "Off") + '</Mute></Volume>');
-};
+var errcnt = 0;
 
-YAMAHA.prototype.sendRcCode = function (code) {   // 7C80 = Power on/off
-    if (typeof code == 'number') {
-        code = code.toString(16);
-    }
-    //DSZ-Z7: <System><Remote_Signal><Receive><Code>***</Code></Receive></Remote_Signal></System>
-    //RX-Vx7x: <System><Misc><Remote_Signal><Receive><Code>***</Code></Receive></Remote_Signal></Misc></System>
-    //var command = '<YAMAHA_AV cmd="PUT"><Main_Zone><Remote_Control><RC_Code>' + code + '</RC_Code></Remote_Control></Main_Zone></YAMAHA_AV>';
-    //var command = '<YAMAHA_AV cmd="PUT"><System><Misc><Remote_Signal><Receive><Code>' + code + '</Code></Receive></Remote_Signal></Misc></System></YAMAHA_AV>';
-    //var command = '<YAMAHA_AV cmd="PUT"><System><Remote_Signal><Receive><Code>' + code + '</Code></Receive></Remote_Signal></System></YAMAHA_AV>';
+YAMAHA.prototype.xSendXMLToReceiver= function(xml){
 
-    var command = '<YAMAHA_AV cmd="PUT"><System><Remote_Control><RC_Code>' + code + '</RC_Code></Remote_Control></System></YAMAHA_AV>';
-    return this.SendXMLToReceiver(command);
+    var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
+    var delay = isPutCommand? this.responseDelay*1000:0;
+    return prequest.postAsync({
+        method: 'POST',
+        uri: 'http://'+this.ip+'/YamahaRemoteControl/ctrl',
+        timeout: 1500,
+        body:xml
+    }).delay(delay).then(function(response) {
+        errcnt = 0;
+        return response.body;
+    }).catch(function(e) {
+        if (errcnt++ === 0) {
+            //var stack = error.stack; //();get stack
+            adapter.log.error(JSON.stringify(error.message));
+        }
+    });
 };
-
-YAMAHA.prototype.setPureDirect = function(bo){
-    return this.sendCommand('<Sound_Video><Pure_Direct><Mode>' + (bo ? 'On' : 'Off') + '</Mode></Pure_Direct></Sound_Video>');
-};
-YAMAHA.prototype.setHDMIOutput = function(no, bo){
-    return this.sendCommand('<Sound_Video><HDMI><Output><OUT_' + no + '>' + (bo ? 'On' : 'Off') + '</OUT_' + no + '></Output></HDMI></Sound_Video>', 'System');
-};
-YAMAHA.prototype.scene = function(no) {
-    adapter.setState('scene', '', true);
-    return this.sendCommand('<Scene><Scene_Load>Scene ' + no + '</Scene_Load></Scene>');
-};
-YAMAHA.prototype.power = function(bo, zone){
-    return this.sendCommand('<Power_Control><Power>' + (bo ? 'On' : 'Standby') + '</Power></Power_Control>', zone);
-};
-YAMAHA.prototype.allZones = function(bo){
-    return this.sendCommand('<Power_Control><Power>' + (bo ? 'On' : 'Standby') + '</Power></Power_Control>', 'System');
-};
-
-YAMAHA.prototype.sleep = function(val, zone){
-    if (val < 30) val = 'Off';
-    else if (val < 60) val = '30 min';
-    else if (val < 90) val = '60 min';
-    else if (val < 120) val = '90 min';
-    else val = '120 min';
-    return this.sendCommand('<Power_Control><Sleep>' + val + '</Sleep></Power_Control>', zone);
-};
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+if (!YAMAHA.prototype.sendCommand) {
+    
+    YAMAHA.prototype.sendCommand = function (command, zone) {
+        zone = getZone(zone);
+        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '>' + command + '</' + zone + '></YAMAHA_AV>';
+        return this.SendXMLToReceiver(command);
+    };
+    
+    YAMAHA.prototype.setMute = function (to) {
+        return this.sendCommand('<Volume><Mute>' + (to ? "On" : "Off") + '</Mute></Volume>');
+    };
+    
+    YAMAHA.prototype.sendRcCode = function (code) {   // 7C80 = Power on/off
+        if (typeof code == 'number') {
+            code = code.toString(16);
+        }
+        //DSZ-Z7: <System><Remote_Signal><Receive><Code>***</Code></Receive></Remote_Signal></System>
+        //RX-Vx7x: <System><Misc><Remote_Signal><Receive><Code>***</Code></Receive></Remote_Signal></Misc></System>
+        //var command = '<YAMAHA_AV cmd="PUT"><Main_Zone><Remote_Control><RC_Code>' + code + '</RC_Code></Remote_Control></Main_Zone></YAMAHA_AV>';
+        //var command = '<YAMAHA_AV cmd="PUT"><System><Misc><Remote_Signal><Receive><Code>' + code + '</Code></Receive></Remote_Signal></Misc></System></YAMAHA_AV>';
+        //var command = '<YAMAHA_AV cmd="PUT"><System><Remote_Signal><Receive><Code>' + code + '</Code></Receive></Remote_Signal></System></YAMAHA_AV>';
+        
+        var command = '<YAMAHA_AV cmd="PUT"><System><Remote_Control><RC_Code>' + code + '</RC_Code></Remote_Control></System></YAMAHA_AV>';
+        return this.SendXMLToReceiver(command);
+    };
+    
+    YAMAHA.prototype.setPureDirect = function (bo) {
+        return this.sendCommand('<Sound_Video><Pure_Direct><Mode>' + (bo ? 'On' : 'Off') + '</Mode></Pure_Direct></Sound_Video>');
+    };
+    YAMAHA.prototype.setHDMIOutput = function (no, bo) {
+        return this.sendCommand('<Sound_Video><HDMI><Output><OUT_' + no + '>' + (bo ? 'On' : 'Off') + '</OUT_' + no + '></Output></HDMI></Sound_Video>', 'System');
+    };
+    YAMAHA.prototype.scene = function (no) {
+        adapter.setState('scene', '', true);
+        return this.sendCommand('<Scene><Scene_Load>Scene ' + no + '</Scene_Load></Scene>');
+    };
+    YAMAHA.prototype.power = function (bo, zone) {
+        return this.sendCommand('<Power_Control><Power>' + (bo ? 'On' : 'Standby') + '</Power></Power_Control>', zone);
+    };
+    YAMAHA.prototype.allZones = function (bo) {
+        return this.sendCommand('<Power_Control><Power>' + (bo ? 'On' : 'Standby') + '</Power></Power_Control>', 'System');
+    };
+    
+    YAMAHA.prototype.sleep = function (val, zone) {
+        if (val < 30) val = 'Off';
+        else if (val < 60) val = '30 min';
+        else if (val < 90) val = '60 min';
+        else if (val < 120) val = '90 min';
+        else val = '120 min';
+        return this.sendCommand('<Power_Control><Sleep>' + val + '</Sleep></Power_Control>', zone);
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // remove, if available in NPM Package
 
-if (!YAMAHA.hasOwnProperty("setBassTo")) {
+//if (!YAMAHA.hasOwnProperty("setBassTo")) {
+if (!YAMAHA.prototype.setBassTo) {
 
     YAMAHA.prototype.setBassTo = function (to) {
         var zone = getZone(); //only available in Main Zone
@@ -222,11 +247,11 @@ YAMAHA.prototype.execCommand = function (id, val) {
     var as = id.split('.');
     var aS = iD.split('.');
     if (as[0] + '.' + as[1] != adapter.namespace) return;
-    
+    adapter.log.debug('execCommand: id=' + id + ' val=' + val);
     var i = as[2] === "commands" ? 3 : 2;
     var szVal = val;
     if (typeof szVal == 'number') szVal = szVal.toString();
-
+    
     switch (as [i]) {
         case "volumeup":
             this.adjustVolume(val);
@@ -362,11 +387,62 @@ function callWithCatch(origPromise, onSucess, onError){
         onSucess(result);
     }).catch(function(error) {
         if (errorCount++ === 0) {
-            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ': ' + error.message);
+            //var stack = error.stack; //();get stack
+            //adapter.log.error(JSON.stringify(error.message));
+            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip);
         }
         safeCallback(onError);
     });
 }
+
+// function refreshStates(cb) {
+//     callWithCatch(yamaha.getBasicInfo(), function (basicStatus) {
+//         if (basicStatus) {
+//             var zone = 'Main_Zone';
+//             var dev = devices.root; //new devices.CDevice('');
+//             dev.setChannel();
+//             dev.set("input", basicStatus.getCurrentInput());
+//             dev.set("volume", basicStatus.getVolume());
+//             dev.set("mute", basicStatus.isMuted());
+//             dev.set("power", basicStatus.isOn());
+//             dev.set("zone1", basicStatus.isOn());
+//             dev.set("pureDirect", basicStatus.isPureDirectEnabled());
+//             dev.set("surround", basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0].Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
+//             var v = basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0].Power_Control[0].Sleep[0];
+//             dev.set('sleep', (v === 'Off' ? 0 : v));
+//             dev.set("partyMode", basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Party_Info[0] === "On");
+//
+//             try {
+//                 dev.set('bass', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Tone[0].Bass[0].Val[0]));
+//                 dev.set('treble', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Tone[0].Treble[0].Val[0]));
+//                 dev.set('subwooferLevel', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Volume[0].Subwoofer_Trim[0].Val[0]));
+//                 dev.set('dialogLift', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Dialogue_Adjust[0].Dialogue_Lift[0]));
+//                 dev.set('dialogLevel', parseInt(basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Dialogue_Adjust[0].Dialogue_Lvl[0]));
+//                 dev.set('YPAOVolume', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].YPAO_Volume[0] !== 'Off');
+//                 dev.set('extraBass', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Extra_Bass[0] !== 'Off');
+//                 dev.set('adaptiveDRC', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].Adaptive_DRC[0] !== 'Off');
+//
+//                 dev.set('hdmiOut1', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].HDMI[0].Output[0].OUT_1[0] === 'On');
+//                 dev.set('hdmiOut2', basicStatus.YAMAHA_AV[zone][0].Basic_Status[0].Sound_Video[0].HDMI[0].Output[0].OUT_2[0] === 'On');
+//
+//             } catch (e) {
+//                 //console.log(e);
+//             }
+//             dev.update();
+//         }
+//         safeCallback(cb);
+//     }, function() {
+//         if(typeof devices.get == 'function' && devices.get('power').val) {
+//             var dev = devices.root;
+//             dev.setChannel();
+//             dev.set("power", false);
+//             dev.set("zone1", false);
+//             dev.update();
+//         }
+//         cb();
+//     });
+// }
+
 
 function refreshStates(cb) {
     callWithCatch(yamaha.getBasicInfo(), function (basicStatus) {
@@ -383,7 +459,7 @@ function refreshStates(cb) {
                 try {
                     dev.set("pureDirect", basicStatus.isPureDirectEnabled());
                 } catch (e) {
-
+                    
                 }
                 var _basicStatus = basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0];
                 dev.set('surround', _basicStatus.Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
@@ -490,84 +566,100 @@ function repairConfig () {
     });
 }
 
-function discoverReceiver(callback) {
+// function discoverReceiver(callback) {
+//
+//     var ip = '';
+//     var ips = [];
+//
+//     function saveFoundIP(ip, callback) {
+//         adapter.getForeignObject("system.adapter." + adapter.namespace, function (err, obj) {
+//             obj.native.ip = ip;
+//             adapter.setForeignObject(obj._id, obj, {}, function (err, obj) {
+//                 adapter.config.ip = ip;
+//                 callback();
+//             });
+//         });
+//     }
+//
+//     function getIPAddresses() {
+//         // found on stackoverflow
+//         var interfaces = require('os').networkInterfaces();
+//         for (var devName in interfaces) {
+//             var iface = interfaces[devName];
+//             for (var i = 0; i < iface.length; i++) {
+//                 var alias = iface[i];
+//                 if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+//                     ips.push(alias.address);
+//                     //return alias.address;
+//             }
+//         }
+//         //return '0.0.0.0';
+//     }
+//
+//     adapter.log.info('No IP configurated, trying to find a device...');
+//     getIPAddresses();
+//     if (ips.length <= 0) {
+//         return;
+//     }
+//
+//     function check() {
+//         var ownip = ips.pop();
+//         var prefixIP = ownip.split('.', 3).join('.') + '.';
+//         if (!request) request = require('request');
+//         var i = 1;
+//
+//         adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
+//
+//         function doRequest() {
+//             if (!ip && i < 255) {
+//                 request.post(
+//                     {
+//                         timeout: 200,
+//                         method: 'POST',
+//                         uri: 'http://' + prefixIP + i + '/YamahaRemoteControl/ctrl',
+//                         body: '<YAMAHA_AV cmd="GET"><System><Config>GetParam</Config></System></YAMAHA_AV>'
+//                     },
+//                     function (err, response, body) {
+//                         if (!err && response.statusCode == 200) {
+//                             ip = response.request.host;
+//                             var r = body.match("<Model_Name>(.*?)</Model_Name>.*?<System_ID>(.*?)</System_ID>.*?<Version>(.*?)</Version>");
+//                             r = r || body.match("<Model_Name>(.*?)</Model_Name>");
+//                             if (r && r.length >= 4) {
+//                                 adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1] + ' - System-ID: ' + r[2] + ' - Version: ' + r[3]);
+//                             } else if (r && r.length >= 2) {
+//                                 adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1]);
+//                             }
+//                             saveFoundIP(ip, callback);
+//                         }
+//                         i++;
+//                         setTimeout(doRequest, 0);
+//                     }
+//                 );
+//             } else {
+//                 if (ips.length && !ip) setTimeout(check, 0);
+//             }
+//         }
+//
+//         doRequest();
+//     }
+//     check();
+// }
 
-    var ip = '';
-    var ips = [];
-
-    function saveFoundIP(ip, callback) {
-        adapter.getForeignObject("system.adapter." + adapter.namespace, function (err, obj) {
-            obj.native.ip = ip;
-            adapter.setForeignObject(obj._id, obj, {}, function (err, obj) {
-                adapter.config.ip = ip;
-                callback();
-            });
-        });
-    }
-
-    function getIPAddresses() {
-        // found on stackoverflow
-        var interfaces = require('os').networkInterfaces();
-        for (var devName in interfaces) {
-            var iface = interfaces[devName];
-
-            for (var i = 0; i < iface.length; i++) {
-                var alias = iface[i];
-                if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
-                    ips.push(alias.address);
-                //return alias.address;
-            }
-        }
-        //return '0.0.0.0';
-    }
-
-    adapter.log.info('No IP configurated, trying to find a device...');
-    getIPAddresses();
-    if (ips.length <= 0) {
+function XcheckIP(callback) {
+    if (adapter.config.ip) {
+        callback();
         return;
     }
-
-    function check() {
-        var ownip = ips.pop();
-        var prefixIP = ownip.split('.', 3).join('.') + '.';
-        var request = require('request');
-        var i = 1;
-
-        adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
-
-        function doRequest() {
-            if (!ip && i < 255) {
-                request.post(
-                    {
-                        timeout: 200,
-                        method: 'POST',
-                        uri: 'http://' + prefixIP + i + '/YamahaRemoteControl/ctrl',
-                        body: '<YAMAHA_AV cmd="GET"><System><Config>GetParam</Config></System></YAMAHA_AV>'
-                    },
-                    function (err, response, body) {
-                        if (!err && response.statusCode == 200) {
-                            ip = response.request.host;
-                            var r = body.match("<Model_Name>(.*?)</Model_Name>.*?<System_ID>(.*?)</System_ID>.*?<Version>(.*?)</Version>");
-                            r = r || body.match("<Model_Name>(.*?)</Model_Name>");
-                            if (r && r.length >= 4) {
-                                adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1] + ' - System-ID: ' + r[2] + ' - Version: ' + r[3]);
-                            } else if (r && r.length >= 2) {
-                                adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1]);
-                            }
-                            saveFoundIP(ip, callback);
-                        }
-                        i++;
-                        setTimeout(doRequest, 0);
-                    }
-                );
-            } else {
-                if (ips.length && !ip) setTimeout(check, 0);
-            }
-        }
-
-        doRequest();
-    }
-    check();
+    var discover = require('./discover');
+    //discover.discoverReceiver(function(ip) {
+    discover.findReceiver(function(ip, info) {
+        if (!ip) return;
+        soef.changeConfig(function(config) {
+            config.ip = ip;
+        },
+            callback
+        );
+    });
 }
 
 function checkIP(callback) {
@@ -575,7 +667,17 @@ function checkIP(callback) {
         callback();
         return;
     }
-    discoverReceiver(callback);
+    //YAMAHA.prototype.discover(function(ip, info) {
+    yamaha.discover(function(ip, info) {
+        if (!ip) return;
+        soef.changeConfig(function(config) {
+                config.ip = ip;
+                yamaha.ip = ip;
+                adapter.config.ip = ip; // --> soef
+            },
+            callback
+        );
+    });
 }
 
 
@@ -584,8 +686,9 @@ function checkIP(callback) {
 function main() {
 
     repairConfig();
+    yamaha = new YAMAHA(adapter.config.ip, undefined, 1500);
     checkIP(function() {
-        yamaha = new YAMAHA(adapter.config.ip);
+        //yamaha = new YAMAHA(adapter.config.ip);
 
         setTimeout(updateStates, 1000);
 
@@ -617,3 +720,6 @@ function main() {
         });
     });
 }
+
+
+
