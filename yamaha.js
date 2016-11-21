@@ -1,13 +1,11 @@
 "use strict";
 
 var utils = require(__dirname + '/lib/utils');
-//var soef = require(__dirname + '/lib/soef'),
-var soef = require('soef'),
+var soef = require(__dirname + '/lib/soef'),
     devices = new soef.Devices();
 
 var YAMAHA = require("yamaha-nodejs");
 var yamaha;
-var request;
 
 var adapter = utils.adapter({
     name: 'yamaha',
@@ -50,6 +48,7 @@ var adapter = utils.adapter({
     }
 });
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var zone = 'Main_Zone';
@@ -58,38 +57,6 @@ function getZone(zone) {
     if (zone && typeof zone == 'string') return zone;
     return "Main_Zone";
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// needed for a smaler timeout...
-/*
-request = require("request");
-var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
-var prequest = Promise.promisify(request);
-Promise.promisifyAll(prequest);
-
-var errcnt = 0;
-
-YAMAHA.prototype.xSendXMLToReceiver= function(xml){
-
-    var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
-    var delay = isPutCommand? this.responseDelay*1000:0;
-    return prequest.postAsync({
-        method: 'POST',
-        uri: 'http://'+this.ip+'/YamahaRemoteControl/ctrl',
-        timeout: 1500,
-        body:xml
-    }).delay(delay).then(function(response) {
-        errcnt = 0;
-        return response.body;
-    }).catch(function(e) {
-        if (errcnt++ === 0) {
-            //var stack = error.stack; //();get stack
-            adapter.log.error(JSON.stringify(error.message));
-        }
-    });
-};
-*/
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 YAMAHA.prototype.sendCommand = function (command, zone) {
     zone = getZone(zone);
@@ -254,7 +221,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
     var as = id.split('.');
     var aS = iD.split('.');
     if (as[0] + '.' + as[1] != adapter.namespace) return;
-    adapter.log.debug('execCommand: id=' + id + ' val=' + val);
+    
     var i = as[2] === "commands" ? 3 : 2;
     var szVal = val;
     if (typeof szVal == 'number') szVal = szVal.toString();
@@ -394,9 +361,7 @@ function callWithCatch(origPromise, onSucess, onError){
         onSucess(result);
     }).catch(function(error) {
         if (errorCount++ === 0) {
-            //var stack = error.stack; //();get stack
-            //adapter.log.error(JSON.stringify(error.message));
-            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip);
+            adapter.log.error(JSON.stringify(error));
         }
         safeCallback(onError);
     });
@@ -439,7 +404,7 @@ function refreshStates(cb) {
         }
         safeCallback(cb);
     }, function() {
-        if(typeof devices.get == 'function' && devices.get('power').val) {
+        if(devices.get('power').val) {
             var dev = devices.root;
             dev.setChannel();
             dev.set("power", false);
@@ -535,6 +500,7 @@ function discoverReceiver(callback) {
         var interfaces = require('os').networkInterfaces();
         for (var devName in interfaces) {
             var iface = interfaces[devName];
+
             for (var i = 0; i < iface.length; i++) {
                 var alias = iface[i];
                 if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
@@ -554,7 +520,7 @@ function discoverReceiver(callback) {
     function check() {
         var ownip = ips.pop();
         var prefixIP = ownip.split('.', 3).join('.') + '.';
-        if (!request) request = require('request');
+        var request = require('request');
         var i = 1;
 
         adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
