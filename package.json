@@ -1,6 +1,6 @@
 {
   "name": "iobroker.yamaha",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "ioBroker yamaha Adapter",
   "author": {
     "name": "soef",

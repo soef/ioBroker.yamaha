@@ -2,7 +2,7 @@
 
   "common": {
     "name": "yamaha",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",
@@ -50,7 +50,7 @@
         "role": "systemconfig.name",
         "read": true,
         "write": false,
-        "def": null,
+        "def": "",
         "desc": "Version"
       },
       "native": { }
@@ -64,7 +64,7 @@
         "role": "systemconfig.version",
         "read": true,
         "write": false,
-        "def": null,
+        "def": "",
         "desc": "Version"
       },
       "native": { }
@@ -78,7 +78,7 @@
         "role": "media.xmlCommand",
         "read": true,
         "write": true,
-        "def": null,
+        "def": "",
         "desc": "XML Command (eg. <Main_Zone><Volume><Mute>On</Mute></Volume></Main_Zone>)"
       },
       "native": { }
@@ -92,7 +92,7 @@
         "role": "media.command",
         "read": true,
         "write": true,
-        "def": null,
+        "def": "",
         "desc": "Command (eg. volumeUp 100)"
       },
       "native": { }
@@ -106,7 +106,7 @@
         "role": "media.webradio",
         "read": true,
         "write": true,
-        "def": null,
+        "def": "",
         "desc": "Internet Radiosender selektieren"
       },
       "native": { }
@@ -120,7 +120,7 @@
         "role": "media.volumeUp",
         "read": true,
         "write": true,
-        "def": null,
+        "def": 0,
         "desc": "Volume Up"
       },
       "native": { }
@@ -134,7 +134,7 @@
         "role": "media.volumeDown",
         "read": true,
         "write": true,
-        "def": null,
+        "def": 0,
         "desc": "Volume Down"
       },
       "native": { }
@@ -148,7 +148,7 @@
         "role": "media.adjustVolume",
         "read": true,
         "write": true,
-        "def": null,
+        "def": 0,
         "desc": "Adjust Volume"
       },
       "native": { }
@@ -158,11 +158,11 @@
       "type": "state",
       "common": {
         "name": "Toggle Mute",
-        "type": "integer",
+        "type": "boolean",
         "role": "media.toggleMute",
         "read": true,
         "write": true,
-        "def": null,
+        "def": 0,
         "desc": "Toggle Mute"
       },
       "native": { }
@@ -176,7 +176,7 @@
         "role": "media.volume",
         "read": true,
         "write": true,
-        "def": null,
+        "def": 0,
         "desc": "Volume"
       },
       "native": { }
@@ -190,7 +190,7 @@
         "role": "media.input",
         "read": true,
         "write": true,
-        "def": null,
+        "def": "",
         "desc": "Input"
       },
       "native": {
@@ -224,7 +224,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Mute"
       },
       "native": { }
@@ -240,7 +240,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Power"
       },
       "native": { }
@@ -256,7 +256,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Refresh states now"
       },
       "native": { }
@@ -272,7 +272,7 @@
       "write": true,
       "min": false,
       "max": true,
-      "def": null,
+      "def": false,
       "desc": "Stop"
     },
     "native": { }
@@ -288,7 +288,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Pause"
       },
       "native": { }
@@ -304,7 +304,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Skip"
       },
       "native": { }
@@ -320,7 +320,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Rewind"
       },
       "native": { }
@@ -336,7 +336,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Skip"
       },
       "native": { }
@@ -352,7 +352,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "YPAO Volume"
       },
       "native": { }
@@ -368,7 +368,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Extra Bass"
       },
       "native": { }
@@ -384,7 +384,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Adaptive DRC"
       },
       "native": { }
@@ -400,7 +400,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Party Mode"
       },
       "native": { }
@@ -416,7 +416,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Party Mode Volume Up"
       },
       "native": { }
@@ -432,7 +432,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Party Mode Volume Down"
       },
       "native": { }
@@ -448,7 +448,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "HDMI-1 Output"
       },
       "native": { }
@@ -464,7 +464,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "HDMI-2 Output"
       },
       "native": { }
@@ -480,7 +480,7 @@
         "write": true,
         "min": false,
         "max": true,
-        "def": null,
+        "def": false,
         "desc": "Pure Direct"
       },
       "native": { }
@@ -496,7 +496,7 @@
         "write": true,
         "min": -60,
         "max": 60,
-        "def": null,
+        "def": 0,
         "desc": "Set Bass to (-60..60)",
         "func": "setBassTo"
       },
@@ -513,7 +513,7 @@
         "write": true,
         "min": -60,
         "max": 60,
-        "def": null,
+        "def": 0,
         "desc": "Set Treble to (-60..60)"
       },
       "native": { }
@@ -529,7 +529,7 @@
         "write": true,
         "min": -60,
         "max": 60,
-        "def": null,
+        "def": 0,
         "desc": "Set Subwoofer Trim To"
       },
       "native": { }
@@ -545,7 +545,7 @@
         "write": true,
         "min": 0,
         "max": 5,
-        "def": null,
+        "def": 0,
         "desc": "Set Dialog Lift To (0..5)"
       },
       "native": { }
@@ -561,7 +561,7 @@
         "write": true,
         "min": 0,
         "max": 3,
-        "def": null,
+        "def": 0,
         "desc": "Set Dialog Level To (0..3)"
       },
       "native": { }
@@ -577,7 +577,7 @@
         "write": true,
         "min": 0,
         "max": 3,
-        "def": null,
+        "def": 0,
         "desc": "Set Input of Zone To"
       },
       "native": { }

@@ -235,7 +235,8 @@ YAMAHA.prototype.adjustVolume = function (dif) {
 
 YAMAHA.prototype.execCommand = function (id, val) {
 
-    var iD = id;
+    //var iD = id;
+    var aS = id.split('.');
     id = id.toLowerCase();
     var bo = val || false;
     if (val === undefined) {
@@ -245,7 +246,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
         bo = val === "true";
     }
     var as = id.split('.');
-    var aS = iD.split('.');
+    //var aS = iD.split('.');
     if (as[0] + '.' + as[1] != adapter.namespace) return;
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
     var i = as[2] === "commands" ? 3 : 2;
@@ -278,7 +279,9 @@ YAMAHA.prototype.execCommand = function (id, val) {
         case "mute":
             this.setMute(bo);
             break;
+        
         case "togglemute":
+            //this.setMute(!!val);
             this.setMute(true);
             break;
         case "command":
@@ -309,8 +312,10 @@ YAMAHA.prototype.execCommand = function (id, val) {
             break;
 
         case "partymode":
+        /**/
         case "partymodeup":
         case "partymodedown":
+        /**/
         case "setbassto":
         case "settrebleto":
         case "setsubwoofertrimto":
@@ -329,7 +334,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
         case "partymodevolumeup":
             this.partyModeUp(val);
             break;
-        case "partymodedown":
+        case "partymodedown": //??
             this.partyModeDown(val);
             break;
         case "bass":
