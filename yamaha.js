@@ -7,7 +7,7 @@ var soef = require('soef'),
 //var YAMAHA = require("yamaha-nodejs");
 var YAMAHA = require("yamaha-nodejs-soef");
 var yamaha;
-var request;
+//var request;
 
 var adapter = utils.adapter({
     name: 'yamaha',
@@ -233,25 +233,28 @@ YAMAHA.prototype.adjustVolume = function (dif) {
 };
 
 
+
 YAMAHA.prototype.execCommand = function (id, val) {
 
     //var iD = id;
     var aS = id.split('.');
     id = id.toLowerCase();
-    var bo = val || false;
-    if (val === undefined) {
-        var as = id.split(" ");
-        val = as[1];
-        id = as[0];
-        bo = val === "true";
-    }
+    //var bo = val || false;
+    var bo = (val === 'true') || !!(val>>0);
+    // if (val === undefined) {
+    //     var as = id.split(" ");
+    //     val = as[1];
+    //     id = as[0];
+    //     bo = val === "true";
+    // }
     var as = id.split('.');
     //var aS = iD.split('.');
-    if (as[0] + '.' + as[1] != adapter.namespace) return;
+    //if (as[0] + '.' + as[1] != adapter.namespace) return;
+    if (!adapter._namespaceRegExp.test(id)) return;
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
     var i = as[2] === "commands" ? 3 : 2;
     var szVal = val;
-    if (typeof szVal == 'number') szVal = szVal.toString();
+    if (typeof szVal != 'string') szVal = szVal.toString();
     
     switch (as [i]) {
         case "volumeup":
@@ -285,7 +288,9 @@ YAMAHA.prototype.execCommand = function (id, val) {
             this.setMute(true);
             break;
         case "command":
-            this.execCommand(this.namespace + "." + "commands" + "." + val);
+            var ar = val.split(' ');
+            if (ar.length < 2) return;
+            this.execCommand(this.namespace + "." + "commands" + "." + ar[0], ar[1]);
             break;
         case "xmlcommand":
             val = val.replace(/\[/g, "<").replace(/\]/g, ">");
@@ -394,7 +399,7 @@ function callWithCatch(origPromise, onSucess, onError){
         if (errorCount++ === 0) {
             //var stack = error.stack; //();get stack
             //adapter.log.error(JSON.stringify(error.message));
-            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip);
+            adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ' ' + error.message);
         }
         safeCallback(onError);
     });
