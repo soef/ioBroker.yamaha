@@ -2,24 +2,35 @@
 
 var utils = require(__dirname + '/lib/utils');
 var soef = require('soef'),
-    devices = new soef.Devices();
+    devices = new soef.Devices(),
+    //YAMAHA = require("yamaha-nodejs"),
+    YAMAHA = require("yamaha-nodejs-soef"),
+    Y5 = require('y5');
 
-//var YAMAHA = require("yamaha-nodejs");
-var YAMAHA = require("yamaha-nodejs-soef");
-var yamaha;
-//var request;
+var yamaha,
+    peer,
+    y5,
+    refreshTimer = soef.Timer();
+
+function clearPeer() {
+    if (peer) {
+        peer.close();
+        peer = null;
+    }
+}
 
 var adapter = utils.adapter({
     name: 'yamaha',
 
     unload: function (callback) {
         try {
-            callback();
+            if (y5) y5.close();
+            refreshTimer.clear();
+            clearPeer();
+            setTimeout(callback, 1700);
         } catch (e) {
             callback();
         }
-    },
-    install: function (callback) {
     },
     stateChange: function (id, state) {
         if (state && !state.ack) {
@@ -30,10 +41,6 @@ var adapter = utils.adapter({
         devices.init(adapter, function (err) {
             main();
         });
-    },
-    discover: function (callback) {
-    },
-    uninstall: function (callback) {
     },
     objectChange: function (id, obj) {
         //adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
@@ -50,36 +57,7 @@ function getZone(zone) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// needed for a smaler timeout...
-/*
-request = require("request");
-var Promise = require(__dirname + '/node_modules/yamaha-nodejs/node_modules/bluebird');
-var prequest = Promise.promisify(request);
-Promise.promisifyAll(prequest);
 
-var errcnt = 0;
-
-YAMAHA.prototype.xSendXMLToReceiver= function(xml){
-
-    var isPutCommand = xml.indexOf("cmd=\"PUT\"">=0);
-    var delay = isPutCommand? this.responseDelay*1000:0;
-    return prequest.postAsync({
-        method: 'POST',
-        uri: 'http://'+this.ip+'/YamahaRemoteControl/ctrl',
-        timeout: 1500,
-        body:xml
-    }).delay(delay).then(function(response) {
-        errcnt = 0;
-        return response.body;
-    }).catch(function(e) {
-        if (errcnt++ === 0) {
-            //var stack = error.stack; //();get stack
-            adapter.log.error(JSON.stringify(error.message));
-        }
-    });
-};
-*/
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 if (!YAMAHA.prototype.sendCommand) {
     
     YAMAHA.prototype.sendCommand = function (command, zone) {
@@ -223,15 +201,25 @@ YAMAHA.prototype.partyMode = function(bo){
     bo ? this.partyModeOn() : this.partyModeOff();
 };
 
-YAMAHA.prototype.adjustVolume = function (dif) {
-    var self = this;
-    var akt = adapter.getState("volume", function (err, obj) {
-        var val = obj.val + dif;
-        self.setVolumeTo(val);
-        adapter.setState("volume", { val: val, ack: true });
-    });
-};
+// YAMAHA.prototype.adjustVolume = function (dif) {
+//     var self = this;
+//     var akt = adapter.getState("volume", function (err, obj) {
+//         var val = obj.val + dif;
+//         self.setVolumeTo(val);
+//         adapter.setState("volume", { val: val, ack: true });
+//         devices.setrawval('volume', val);
+//     });
+// };
 
+
+YAMAHA.prototype.adjustVolume = function (dif) {
+    var obj = devices.get('volume');
+    if (obj && obj.val !== 'undefined') {
+        obj.val += dif;
+        this.setVolumeTo(obj.val);
+        adapter.setState("volume", {val: obj.val, ack: true});
+    }
+};
 
 
 YAMAHA.prototype.execCommand = function (id, val) {
@@ -252,10 +240,20 @@ YAMAHA.prototype.execCommand = function (id, val) {
     //if (as[0] + '.' + as[1] != adapter.namespace) return;
     if (!adapter._namespaceRegExp.test(id)) return;
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
-    var i = as[2] === "commands" ? 3 : 2;
-    var szVal = val;
-    if (typeof szVal != 'string') szVal = szVal.toString();
-    
+    //var i = as[2] === "commands" ? 3 : 2;
+    var i = 2;
+    var szVal = val.toString();
+    //if (typeof szVal != 'string') szVal = szVal.toString();
+    switch(as[2]) {
+        case 'commands':
+            i = 3;
+            break;
+        case 'realtime':
+            if (!y5) return;
+            var cmd = as[3] === 'raw' ? szVal : soef.sprintf('@%s:%s=%s', aS[3], aS[4], szVal);
+            y5.send(cmd);
+            return;
+    }
     switch (as [i]) {
         case "volumeup":
             this.adjustVolume(val);
@@ -289,8 +287,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
             break;
         case "command":
             var ar = val.split(' ');
-            if (ar.length < 2) return;
-            this.execCommand(this.namespace + "." + "commands" + "." + ar[0], ar[1]);
+            this.execCommand(adapter.namespace + "." + "commands" + "." + ar[0], ar.length > 1 ? ar[1] : false);
             break;
         case "xmlcommand":
             val = val.replace(/\[/g, "<").replace(/\]/g, ">");
@@ -390,15 +387,26 @@ YAMAHA.prototype.execCommand = function (id, val) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var errorCount = 0;
+var timeoutErrorCount = 0;
 
 function callWithCatch(origPromise, onSucess, onError){
     return origPromise.then(function (result) {
-        errorCount = 0;
+        if (errorCount) {
+            clearPeer();
+            errorCount = 0;
+            timeoutErrorCount = 0;
+        }
         onSucess(result);
     }).catch(function(error) {
+        if (error.code === 'ETIMEDOUT' && timeoutErrorCount++ === 0) {
+            if(y5) y5.close();
+            peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
+                peer = null;
+                updateStates();
+                if (y5) y5.start();
+            });
+        }
         if (errorCount++ === 0) {
-            //var stack = error.stack; //();get stack
-            //adapter.log.error(JSON.stringify(error.message));
             adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ' ' + error.message);
         }
         safeCallback(onError);
@@ -455,7 +463,7 @@ function callWithCatch(origPromise, onSucess, onError){
 
 
 function refreshStates(cb) {
-    callWithCatch(yamaha.getBasicInfo(), function (basicStatus) {
+    var r = callWithCatch(yamaha.getBasicInfo(), function (basicStatus) {
         if (basicStatus) {
             var zone = 'Main_Zone';
             var dev = devices.root; //new devices.CDevice('');
@@ -499,7 +507,7 @@ function refreshStates(cb) {
             dev.update();
         }
         safeCallback(cb);
-    }, function() {
+    }, function() { // on error
         if(typeof devices.get === 'function' && devices.get('power').val) {
             var dev = devices.root;
             dev.setChannel();
@@ -511,12 +519,12 @@ function refreshStates(cb) {
     });
 }
 
-
 function updateStates() {
+    refreshTimer.clear();
     refreshStates(function() {
-        var intervall = adapter.config.intervall >> 0;
-        if (intervall) {
-            setTimeout(updateStates, intervall * 1000);
+        //var intervall = adapter.config.intervall >> 0;
+        if (adapter.config.intervall) {
+            refreshTimer.set(updateStates, adapter.config.intervall * 1000);
         }
     });
 }
@@ -549,135 +557,34 @@ function repairObjects(callback) {
 
 function repairConfig () {
     repairObjects();
-    if (!adapter.config['IP'] && !adapter.config['Intervall']) {
+    if (adapter.config.IP === undefined && adapter.config.Intervall === undefined) {
         return;
     }
-    adapter.getForeignObject("system.adapter." + adapter.namespace, function (err, obj) {
+    soef.changeConfig(function (config) {
         var changed = false;
-        if (obj.native['Intervall']) {
-            delete obj.native.Intervall;
-            if (!obj.native['intervall']) {
-                obj.native.intervall = 120;
+        if (config.Intervall != undefined) {
+            delete config.Intervall;
+            if (!config.intervall) {
+                config.intervall = 120;
             }
             changed = true;
         }
-        if (obj.native['IP']) {
-            obj.native.ip = obj.native.IP;
-            delete obj.native.IP;
+        if (config.IP !== undefined) {
+            if (!config.ip) config.ip = config.IP;
+            delete config.IP;
             changed = true;
         }
-        if (changed) {
-            //delete obj.native.Password;
-            //delete obj.native.pollingInterval;
-            //delete obj.native.User;
-            adapter.setForeignObject(obj._id, obj, {}, function (err, obj) {
-            });
-        }
+        adapter.config = config;
+        return changed;
     });
 }
 
-// function discoverReceiver(callback) {
-//
-//     var ip = '';
-//     var ips = [];
-//
-//     function saveFoundIP(ip, callback) {
-//         adapter.getForeignObject("system.adapter." + adapter.namespace, function (err, obj) {
-//             obj.native.ip = ip;
-//             adapter.setForeignObject(obj._id, obj, {}, function (err, obj) {
-//                 adapter.config.ip = ip;
-//                 callback();
-//             });
-//         });
-//     }
-//
-//     function getIPAddresses() {
-//         // found on stackoverflow
-//         var interfaces = require('os').networkInterfaces();
-//         for (var devName in interfaces) {
-//             var iface = interfaces[devName];
-//             for (var i = 0; i < iface.length; i++) {
-//                 var alias = iface[i];
-//                 if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
-//                     ips.push(alias.address);
-//                     //return alias.address;
-//             }
-//         }
-//         //return '0.0.0.0';
-//     }
-//
-//     adapter.log.info('No IP configurated, trying to find a device...');
-//     getIPAddresses();
-//     if (ips.length <= 0) {
-//         return;
-//     }
-//
-//     function check() {
-//         var ownip = ips.pop();
-//         var prefixIP = ownip.split('.', 3).join('.') + '.';
-//         if (!request) request = require('request');
-//         var i = 1;
-//
-//         adapter.log.info('Own IP: ' + ownip + ' Range: ' + prefixIP + '1...255');
-//
-//         function doRequest() {
-//             if (!ip && i < 255) {
-//                 request.post(
-//                     {
-//                         timeout: 200,
-//                         method: 'POST',
-//                         uri: 'http://' + prefixIP + i + '/YamahaRemoteControl/ctrl',
-//                         body: '<YAMAHA_AV cmd="GET"><System><Config>GetParam</Config></System></YAMAHA_AV>'
-//                     },
-//                     function (err, response, body) {
-//                         if (!err && response.statusCode == 200) {
-//                             ip = response.request.host;
-//                             var r = body.match("<Model_Name>(.*?)</Model_Name>.*?<System_ID>(.*?)</System_ID>.*?<Version>(.*?)</Version>");
-//                             r = r || body.match("<Model_Name>(.*?)</Model_Name>");
-//                             if (r && r.length >= 4) {
-//                                 adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1] + ' - System-ID: ' + r[2] + ' - Version: ' + r[3]);
-//                             } else if (r && r.length >= 2) {
-//                                 adapter.log.info('Yamaha Receiver found. IP: ' + ip + ' - Model: ' + r[1]);
-//                             }
-//                             saveFoundIP(ip, callback);
-//                         }
-//                         i++;
-//                         setTimeout(doRequest, 0);
-//                     }
-//                 );
-//             } else {
-//                 if (ips.length && !ip) setTimeout(check, 0);
-//             }
-//         }
-//
-//         doRequest();
-//     }
-//     check();
-// }
-
-function XcheckIP(callback) {
-    if (adapter.config.ip) {
-        callback();
-        return;
-    }
-    var discover = require('./discover');
-    //discover.discoverReceiver(function(ip) {
-    discover.findReceiver(function(ip, info) {
-        if (!ip) return;
-        soef.changeConfig(function(config) {
-            config.ip = ip;
-        },
-            callback
-        );
-    });
-}
 
 function checkIP(callback) {
     if (adapter.config.ip) {
         callback();
         return;
     }
-    //YAMAHA.prototype.discover(function(ip, info) {
     yamaha.discover(function(ip, info) {
         if (!ip) return;
         soef.changeConfig(function(config) {
@@ -691,16 +598,70 @@ function checkIP(callback) {
 }
 
 
+function runRealtimeFunction() {
+    if(!adapter.config.useRealtime) return;
+    y5 = Y5('192.168.1.20', function (err) {
+    });
+    y5.start = runRealtimeFunction;
+    y5.onData = function(data) {
+        adapter.log.debug('Rawdata: ' + data);
+        var ar = data.toString().split('\r\n');
+        ar.length -= 1;
+        var dev = new devices.CDevice('Realtime', 'Realtime');
+        ar.forEach(function (v) {
+            dev.set('raw', v);
+            var a = /@(.*):(.*)=(.*)/.exec(v);
+            if (a && a.length > 3) {
+                dev.setChannel(a[1]);
+                dev.set(a[2], a[3]);
+                if (a[1] === 'MAIN' && a[2] === 'PWR') {
+                }
+                if (a[1] === 'MAIN' && a[2] === 'VOL') {
+                }
+                
+            }
+        });
+        dev.update();
+        if (adapter.config.refreshOnRealtime) {
+            refreshStates();
+        }
+        
+        // console.log('raw: ' + data);
+        // var ar = /@(.*):(.*)=(.*)/.exec(data.toLowerCase());
+        // if (!ar || ar.length < 3) {
+        //     return;
+        // }
+        // var ob = { zone: ar[1], name: ar[2], val: ar[3]};
+        // var o = {};
+        // o [ob.zone] = {};
+        // o [ob.zone][ob.name] = ob.val;
+        // console.log('#### ' + JSON.stringify(o));
+    };
+}
+    
+function normalizeConfig() {
+    adapter.config.useRealtime = adapter.config.useRealtime || true;
+    adapter.config.intervall = adapter.config.intervall >> 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function main() {
-
+    
+    // yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
+    // yamaha.waitForNotify(adapter.config.ip, function (headers) {
+    //     console.log(headers);
+    //     return false;
+    // });
+    //return;
+    
+    normalizeConfig();
     repairConfig();
-    yamaha = new YAMAHA(adapter.config.ip, undefined, 1500);
+    yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
+    yamaha.dontCatchRequestErrors = true;
     checkIP(function() {
-        //yamaha = new YAMAHA(adapter.config.ip);
-
         setTimeout(updateStates, 1000);
+        runRealtimeFunction();
 
         adapter.subscribeStates('*');
 
@@ -730,6 +691,3 @@ function main() {
         });
     });
 }
-
-
-

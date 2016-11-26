@@ -2,7 +2,7 @@
 
   "common": {
     "name": "yamaha",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",
@@ -18,7 +18,9 @@
   },
   "native": {
     "ip": "",
-    "intervall": 120
+    "intervall": 120,
+    "useRealtime": true,
+    "refreshOnRealtime": true
   },
   "objects": [
   ],
@@ -32,6 +34,32 @@
       },
       "native": { }
     },
+    {
+      "_id": "Realtime",
+      "type": "device",
+      "common": {
+        "role": "Realtime",
+        "name": ""
+      },
+      "native": { }
+    },
+    {
+      "_id": "Realtime.MAIN.PWR",
+      "type": "state",
+      "common": {
+        "name": "Input",
+        "type": "string",
+        "role": "media.power",
+        "read": true,
+        "write": true,
+        "def": "",
+        "desc": "Input"
+      },
+      "native": {
+        "values": [ "Standby", "On" ]
+      }
+    },
+
     {
       "_id": "SystemConfig",
       "type": "channel",

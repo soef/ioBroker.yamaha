@@ -15,7 +15,7 @@ iobroker install yamaha
 ```
 or
 ```
-npm install iobroker.yamaha 
+npm install iobroker.yamaha@pre 
 ```
 
 #### Requirements
