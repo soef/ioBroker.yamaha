@@ -5,7 +5,7 @@ var soef = require('soef'),
     devices = new soef.Devices(),
     //YAMAHA = require("yamaha-nodejs"),
     YAMAHA = require("yamaha-nodejs-soef"),
-    Y5 = require('y5');
+    Y5 = require('./y5');
 
 var yamaha,
     peer,
