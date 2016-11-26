@@ -515,7 +515,7 @@ function refreshStates(cb) {
             dev.set('zone1', false);
             dev.update();
         }
-        cb();
+        cb && cb();
     });
 }
 
