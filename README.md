@@ -11,10 +11,6 @@ via ioBroker Admin.
 
 Otherweise execute the following command in the iobroker root directory (e.g. in /opt/iobroker)
 ```
-iobroker install yamaha
-```
-or
-```
 npm install iobroker.yamaha@pre 
 ```
 
