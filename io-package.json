@@ -2,7 +2,7 @@
 
   "common": {
     "name": "yamaha",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",

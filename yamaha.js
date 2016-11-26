@@ -600,7 +600,7 @@ function checkIP(callback) {
 
 function runRealtimeFunction() {
     if(!adapter.config.useRealtime) return;
-    y5 = Y5('192.168.1.20', function (err) {
+    y5 = Y5(adapter.config.ip, function (err) {
     });
     y5.start = runRealtimeFunction;
     y5.onData = function(data) {
