@@ -5,7 +5,7 @@ var soef = require('soef'),
     devices = new soef.Devices(),
     //YAMAHA = require("yamaha-nodejs"),
     YAMAHA = require("yamaha-nodejs-soef"),
-    Y5 = require('./y5');
+    Y5 = require('y5');
 
 var yamaha,
     peer,
@@ -389,6 +389,17 @@ YAMAHA.prototype.execCommand = function (id, val) {
 var errorCount = 0;
 var timeoutErrorCount = 0;
 
+function onConnectionTimeout() {
+    if (peer) return;
+    if(y5) y5.close();
+    peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
+        peer = null;
+        updateStates();
+        if (y5) y5.start();
+    });
+    return true;
+}
+
 function callWithCatch(origPromise, onSucess, onError){
     return origPromise.then(function (result) {
         if (errorCount) {
@@ -399,12 +410,7 @@ function callWithCatch(origPromise, onSucess, onError){
         onSucess(result);
     }).catch(function(error) {
         if (error.code === 'ETIMEDOUT' && timeoutErrorCount++ === 0) {
-            if(y5) y5.close();
-            peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
-                peer = null;
-                updateStates();
-                if (y5) y5.start();
-            });
+            onConnectionTimeout();
         }
         if (errorCount++ === 0) {
             adapter.log.error('Can not connect to yamaha receiver at ' + adapter.config.ip + ' ' + error.message);
@@ -603,39 +609,25 @@ function runRealtimeFunction() {
     y5 = Y5(adapter.config.ip, function (err) {
     });
     y5.start = runRealtimeFunction;
+    y5.onTimeout = onConnectionTimeout;
     y5.onData = function(data) {
         adapter.log.debug('Rawdata: ' + data);
         var ar = data.toString().split('\r\n');
         ar.length -= 1;
         var dev = new devices.CDevice('Realtime', 'Realtime');
         ar.forEach(function (v) {
+            dev.setChannel();
             dev.set('raw', v);
             var a = /@(.*):(.*)=(.*)/.exec(v);
             if (a && a.length > 3) {
                 dev.setChannel(a[1]);
                 dev.set(a[2], a[3]);
-                if (a[1] === 'MAIN' && a[2] === 'PWR') {
-                }
-                if (a[1] === 'MAIN' && a[2] === 'VOL') {
-                }
-                
             }
         });
         dev.update();
         if (adapter.config.refreshOnRealtime) {
             refreshStates();
         }
-        
-        // console.log('raw: ' + data);
-        // var ar = /@(.*):(.*)=(.*)/.exec(data.toLowerCase());
-        // if (!ar || ar.length < 3) {
-        //     return;
-        // }
-        // var ob = { zone: ar[1], name: ar[2], val: ar[3]};
-        // var o = {};
-        // o [ob.zone] = {};
-        // o [ob.zone][ob.name] = ob.val;
-        // console.log('#### ' + JSON.stringify(o));
     };
 }
     
@@ -647,13 +639,6 @@ function normalizeConfig() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function main() {
-    
-    // yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
-    // yamaha.waitForNotify(adapter.config.ip, function (headers) {
-    //     console.log(headers);
-    //     return false;
-    // });
-    //return;
     
     normalizeConfig();
     repairConfig();

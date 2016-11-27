@@ -1,7 +1,7 @@
 {
   "name": "iobroker.yamaha",
-  "version": "0.2.14",
-  "description": "ioBroker yamaha Adapter",
+  "version": "0.2.16",
+  "description": "ioBroker Yamaha Adapter",
   "author": {
     "name": "soef",
     "email": "soef@gmx.net"
@@ -25,7 +25,8 @@
     "peer-ssdp": "0.0.5",
     "request": "^2.40.0",
     "soef": "^0.1.17",
-    "yamaha-nodejs-soef": "^0.7.0"
+    "yamaha-nodejs-soef": "^0.7.0",
+    "y5": "^0.0.9"
   },
   "repository": {
     "type": "git",
@@ -34,5 +35,6 @@
   "bugs": {
     "url": "https://github.com/soef/iobroker.yamaha/issues"
   },
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "main": "yamaha.js"
 }
