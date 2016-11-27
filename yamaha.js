@@ -250,7 +250,12 @@ YAMAHA.prototype.execCommand = function (id, val) {
             break;
         case 'realtime':
             if (!y5) return;
-            var cmd = as[3] === 'raw' ? szVal : soef.sprintf('@%s:%s=%s', aS[3], aS[4], szVal);
+            var cmd;
+            switch (as[3]) {
+                case 'online': return;
+                case 'raw': cmd = szVal; break;
+                default: cmd = soef.sprintf('@%s:%s=%s', aS[3], aS[4], szVal);
+            }
             y5.send(cmd);
             return;
     }
@@ -606,7 +611,12 @@ function checkIP(callback) {
 
 function runRealtimeFunction() {
     if(!adapter.config.useRealtime) return;
+    var dev = new devices.CDevice('Realtime', 'Realtime');
+    dev.setAndUpdate('online', false);
     y5 = Y5(adapter.config.ip, function (err) {
+        dev.setChannel();
+        //dev.setAndUpdate('online', { val: err ? false : true, common: { write: false }});
+        dev.setAndUpdate('online', err ? false : true);
     });
     y5.start = runRealtimeFunction;
     y5.onTimeout = onConnectionTimeout;
@@ -614,13 +624,13 @@ function runRealtimeFunction() {
         adapter.log.debug('Rawdata: ' + data);
         var ar = data.toString().split('\r\n');
         ar.length -= 1;
-        var dev = new devices.CDevice('Realtime', 'Realtime');
+        //var dev = new devices.CDevice('Realtime', 'Realtime');
         ar.forEach(function (v) {
             dev.setChannel();
             dev.set('raw', v);
             var a = /@(.*):(.*)=(.*)/.exec(v);
             if (a && a.length > 3) {
-                dev.setChannel(a[1]);
+                dev.setChannelEx(a[1]);
                 dev.set(a[2], a[3]);
             }
         });
@@ -635,6 +645,8 @@ function normalizeConfig() {
     adapter.config.useRealtime = adapter.config.useRealtime || true;
     adapter.config.intervall = adapter.config.intervall >> 0;
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
