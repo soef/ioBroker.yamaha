@@ -42,9 +42,9 @@ var adapter = utils.adapter({
             main();
         });
     },
-    objectChange: function (id, obj) {
-        //adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
-    }
+    // objectChange: function (id, obj) {
+    //     //adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
+    // }
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,81 +112,6 @@ if (!YAMAHA.prototype.sendCommand) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// remove, if available in NPM Package
-
-//if (!YAMAHA.hasOwnProperty("setBassTo")) {
-if (!YAMAHA.prototype.setBassTo) {
-
-    YAMAHA.prototype.setBassTo = function (to) {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Tone><Bass><Val>' + to + '</Val><Exp>1</Exp><Unit>dB</Unit></Bass></Tone></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.setTrebleTo = function (to) {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Tone><Treble><Val>' + to + '</Val><Exp>1</Exp><Unit>dB</Unit></Treble></Tone></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.setSubwooferTrimTo = function (to) {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Volume><Subwoofer_Trim><Val>' + to + '</Val><Exp>1</Exp><Unit>dB</Unit></Subwoofer_Trim></Volume></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.setDialogLiftTo = function (to) {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Dialogue_Adjust><Dialogue_Lift>' + to + '</Dialogue_Lift></Dialogue_Adjust></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.setDialogLevelTo = function (to) {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Dialogue_Adjust><Dialogue_Lvl>' + to + '</Dialogue_Lvl></Dialogue_Adjust></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.YPAOVolumeOn = function () {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><YPAO_Volume>Auto</YPAO_Volume></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.YPAOVolumeOff = function () {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><YPAO_Volume>Off</YPAO_Volume></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.extraBassOn = function () {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Extra_Bass>Auto</Extra_Bass></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.extraBassOff = function () {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Extra_Bass>Off</Extra_Bass></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.adaptiveDRCOn = function () {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Adaptive_DRC>Auto</Adaptive_DRC></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-    YAMAHA.prototype.adaptiveDRCOff = function () {
-        var zone = getZone(); //only available in Main Zone
-        var command = '<YAMAHA_AV cmd="PUT"><' + zone + '><Sound_Video><Adaptive_DRC>Off</Adaptive_DRC></Sound_Video></' + zone + '></YAMAHA_AV>';
-        return this.SendXMLToReceiver(command);
-    };
-
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 YAMAHA.prototype.YPAOVolume = function(bo){
     bo ? this.YPAOVolumeOn() : this.YPAOVolumeOff();
@@ -201,17 +126,6 @@ YAMAHA.prototype.partyMode = function(bo){
     bo ? this.partyModeOn() : this.partyModeOff();
 };
 
-// YAMAHA.prototype.adjustVolume = function (dif) {
-//     var self = this;
-//     var akt = adapter.getState("volume", function (err, obj) {
-//         var val = obj.val + dif;
-//         self.setVolumeTo(val);
-//         adapter.setState("volume", { val: val, ack: true });
-//         devices.setrawval('volume', val);
-//     });
-// };
-
-
 YAMAHA.prototype.adjustVolume = function (dif) {
     var obj = devices.get('volume');
     if (obj && obj.val !== 'undefined') {
@@ -224,26 +138,14 @@ YAMAHA.prototype.adjustVolume = function (dif) {
 
 YAMAHA.prototype.execCommand = function (id, val) {
 
-    //var iD = id;
     var aS = id.split('.');
     id = id.toLowerCase();
-    //var bo = val || false;
     var bo = (val === 'true') || !!(val>>0);
-    // if (val === undefined) {
-    //     var as = id.split(" ");
-    //     val = as[1];
-    //     id = as[0];
-    //     bo = val === "true";
-    // }
     var as = id.split('.');
-    //var aS = iD.split('.');
-    //if (as[0] + '.' + as[1] != adapter.namespace) return;
     if (!adapter._namespaceRegExp.test(id)) return;
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
-    //var i = as[2] === "commands" ? 3 : 2;
     var i = 2;
     var szVal = val.toString();
-    //if (typeof szVal != 'string') szVal = szVal.toString();
     switch(as[2]) {
         case 'commands':
             i = 3;
@@ -533,7 +435,6 @@ function refreshStates(cb) {
 function updateStates() {
     refreshTimer.clear();
     refreshStates(function() {
-        //var intervall = adapter.config.intervall >> 0;
         if (adapter.config.intervall) {
             refreshTimer.set(updateStates, adapter.config.intervall * 1000);
         }
@@ -621,10 +522,9 @@ function runRealtimeFunction() {
     y5.start = runRealtimeFunction;
     y5.onTimeout = onConnectionTimeout;
     y5.onData = function(data) {
+        data = data.toString().replace(/\r\n$/, '');
         adapter.log.debug('Rawdata: ' + data);
-        var ar = data.toString().split('\r\n');
-        ar.length -= 1;
-        //var dev = new devices.CDevice('Realtime', 'Realtime');
+        var ar = data.split('\r\n');
         ar.forEach(function (v) {
             dev.setChannel();
             dev.set('raw', v);
@@ -645,8 +545,6 @@ function normalizeConfig() {
     adapter.config.useRealtime = adapter.config.useRealtime || true;
     adapter.config.intervall = adapter.config.intervall >> 0;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
