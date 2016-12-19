@@ -10,13 +10,14 @@ Currently without autodiscover, you have to enter the IP of your receiver
 via ioBroker Admin.
 
 Otherweise execute the following command in the iobroker root directory (e.g. in /opt/iobroker)
-```
-iobroker install yamaha
-```
-or
-```
-npm install iobroker.yamaha 
-```
+``
+npm install iobroker.yamaha@pre 
+iobroker upload yamaha
+``
+
+#### Realtime
+The states will be created, when they accur. I.e. use your ir-remote and change something and you will see the new states. 
+Only one connection is accepted by yamaha devices.
 
 #### Requirements
 Yamaha Reciver
