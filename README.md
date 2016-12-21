@@ -1,6 +1,10 @@
 ![Logo](admin/yamaha.png)
 ## ioBroker.yamaha
 
+[![NPM version](http://img.shields.io/npm/v/iobroker.yamaha.svg)](https://www.npmjs.com/package/iobroker.yamaha)
+[![Tests](http://img.shields.io/travis/soef/ioBroker.yamaha/master.svg)](https://travis-ci.org/soef/ioBroker.yamaha)
+
+
 Adapter for Yamaha AV receivers
 
 #### Configuration
