@@ -1,0 +1,7 @@
+.gitattributes
+.gitignore
+.git
+.DS_Store
+test
+.travis.yml
+appveyor.yml
