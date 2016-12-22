@@ -1,6 +1,13 @@
 ![Logo](admin/yamaha.png)
 ## ioBroker.yamaha
 
+[![NPM version](http://img.shields.io/npm/v/iobroker.yamaha.svg)](https://www.npmjs.com/package/iobroker.yamaha)
+[![Tests](http://img.shields.io/travis/soef/ioBroker.yamaha/master.svg)](https://travis-ci.org/soef/ioBroker.yamaha)
+[![Build status](https://ci.appveyor.com/api/projects/status/t51976au5hcoo2mx?svg=true)](https://ci.appveyor.com/project/soef/iobroker-yamaha)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/soef/iobroker.yamaha/blob/master/LICENSE)
+
+#### Description
+
 Adapter for Yamaha AV receivers
 
 #### Configuration
@@ -24,6 +31,7 @@ Yamaha Reciver
 
 You have to enable "network standby" function in the configuration of your receiver
 
+<!--
 ### License
 The MIT License (MIT)
 
@@ -46,3 +54,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+-->
