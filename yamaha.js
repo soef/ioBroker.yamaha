@@ -155,6 +155,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
             var cmd;
             switch (as[3]) {
                 case 'online': return;
+                case 'reconnect': soef.safeFunction(y5, "reconnect") (); return;
                 case 'raw': cmd = szVal; break;
                 default: cmd = soef.sprintf('@%s:%s=%s', aS[3], aS[4], szVal);
             }
@@ -428,6 +429,9 @@ function refreshStates(cb) {
             dev.setChannel();
             dev.set('power', false);
             dev.set('zone1', false);
+            dev.set('zone2', false);
+            dev.set('zone3', false);
+            dev.set('zone4', false);
             dev.update();
         }
         cb && cb();
@@ -511,15 +515,36 @@ function checkIP(callback) {
     });
 }
 
+function handleRealtimeEvent(event) {
+    switch (event) {
+        case '@ZONE2:PWR=On': devices.root.setAndUpdate('zone2', true); return;
+        case '@ZONE3:PWR=On': devices.root.setAndUpdate('zone3', true); return;
+        case '@ZONE4:PWR=On': devices.root.setAndUpdate('zone4', true); return;
+        case '@ZONE2:PWR=Standby': devices.root.setAndUpdate('zone2', false); return;
+        case '@ZONE3:PWR=Standby': devices.root.setAndUpdate('zone3', false); return;
+        case '@ZONE4:PWR=Standby': devices.root.setAndUpdate('zone4', false); return;
+    }
+    if (adapter.config.refreshOnRealtime) return;
+    switch (event) {
+        case '@ZONE1:PWR=On': devices.root.setAndUpdate('zone1', true); break;
+        case '@ZONE1:PWR=Standby': devices.root.setAndUpdate('zone1', false); break;
+        case '@MAIN:PWR=On': devices.root.setAndUpdate('power', true); break;
+        case '@MAIN:PWR=Standby': devices.root.setAndUpdate('power', false); break;
+    }
+}
 
 function runRealtimeFunction() {
     if(!adapter.config.useRealtime) return;
     var dev = new devices.CDevice('Realtime', 'Realtime');
-    dev.setAndUpdate('online', false);
+    dev.set('online', false);
+    dev.set('reconnect', false);
+    dev.update();
+    //dev.setAndUpdate('online', false);
     y5 = Y5(adapter.config.ip, function (err) {
-        dev.setChannel();
+        //dev.setChannel();
         //dev.setAndUpdate('online', { val: err ? false : true, common: { write: false }});
-        dev.setAndUpdate('online', err ? false : true);
+        //dev.setAndUpdate('online', err ? false : true);
+        devices.root.setAndUpdate('Realtime.online', err ? false : true);
     });
     y5.start = runRealtimeFunction;
     y5.onTimeout = onConnectionTimeout;
@@ -530,6 +555,7 @@ function runRealtimeFunction() {
         ar.forEach(function (v) {
             dev.setChannel();
             dev.set('raw', v);
+            handleRealtimeEvent(v);
             var a = /@(.*):(.*)=(.*)/.exec(v);
             if (a && a.length > 3) {
                 dev.setChannelEx(a[1]);
