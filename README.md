@@ -3,8 +3,11 @@
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.yamaha.svg)](https://www.npmjs.com/package/iobroker.yamaha)
 [![Tests](http://img.shields.io/travis/soef/ioBroker.yamaha/master.svg)](https://travis-ci.org/soef/ioBroker.yamaha)
-[![Build status](https://ci.appveyor.com/api/projects/status/t51976au5hcoo2mx?svg=true)](https://ci.appveyor.com/project/soef/iobroker-yamaha)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/soef/iobroker.yamaha/blob/master/LICENSE)
+
+<!--
+[![Build status](https://ci.appveyor.com/api/projects/status/t51976au5hcoo2mx?svg=true)](https://ci.appveyor.com/project/soef/iobroker-yamaha)
+-->
 
 #### Description
 
@@ -18,7 +21,7 @@ via ioBroker Admin.
 
 Otherweise execute the following command in the iobroker root directory (e.g. in /opt/iobroker)
 ``
-npm install iobroker.yamaha@pre 
+npm install iobroker.yamaha 
 iobroker upload yamaha
 ``
 
