@@ -263,6 +263,8 @@ YAMAHA.prototype.execCommand = function (id, val) {
             break;
 
         case "inputto":
+            this.setInputTo(val, zone);
+            break;
         case "soundprogram":
         case "sleep":
             this[aS [i]](val, zone);
@@ -546,10 +548,10 @@ function normalizeConfig() {
     adapter.config.intervall = adapter.config.intervall >> 0;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function main() {
-    
     normalizeConfig();
     repairConfig();
     yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
