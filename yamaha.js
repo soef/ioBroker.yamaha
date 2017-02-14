@@ -12,6 +12,7 @@ var yamaha,
     namedInputs = {},
     refreshTimer = soef.Timer();
 
+soef.extendArray();
 function clearPeer() {
     if (peer) {
         peer.close();
@@ -267,6 +268,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
     switch (commandName) {
         case 'input':
         case 'inputEnum':
+            this.input(val);
              break;
         case "power":
             p.bo ? this.powerOn() : this.allZones(false);
@@ -792,7 +794,9 @@ function prepareAvailableInputs (inputObjs, features) {
         inputs.push(i);
         namedInputs[v] = i;
     }
-    inputs = inputs.concat (["AirPlay", "NET_RADIO", "Napster", "Spotify"]);
+    inputs = inputs.concat (["AirPlay", "NET_RADIO", "Napster", "Spotify"], Object.keys(namedInputs));
+    inputs.unique();
+    inputs.sort();
     setPossibleStates("inputEnum", inputs);
     //setPossibleStates("input", {}, { remove:1} );
     //setPossibleStates("input", { remove:1} );
