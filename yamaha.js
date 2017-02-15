@@ -481,10 +481,24 @@ var timeoutErrorCount = 0;
 
 function onConnectionTimeout() {
     if (peer) return;
-    if(y5) y5.close();
+    //if(y5) y5.close();
+    if(y5) {
+        y5.close(false);
+        y5.setOnline(false);
+    }
+    devices.root.set("Realtime.online", false);
+    refreshTimer.clearAndInhibit();
+    adapter.log.debug('onConnectionTimeout: waiting for yamaha notification...')
     peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
         peer = null;
-        updateStates();
+        refreshTimer.enable();
+        adapter.log.debug('onConnectionTimeout: notification received!');
+        // setTimeout(yamaha.powerOn.bind(yamaha), 10000);
+        //setTimeout(yamaha.input.bind(yamaha, 'AV5'), 10000);
+        //yamaha.input('AV5');
+        
+        setTimeout(updateStates, 10000);
+        //updateStates();
         if (y5) y5.start();
     });
     return true;
@@ -568,13 +582,13 @@ function refreshStates(cb) {
             dev.set('zone4', false);
             dev.update();
         }
-        cb && cb();
+        cb && cb('error');
     });
 }
 
 function updateStates() {
     refreshTimer.clear();
-    refreshStates(function() {
+    refreshStates(function(err) {
         if (adapter.config.intervall) {
             refreshTimer.set(updateStates, adapter.config.intervall * 1000);
         }
@@ -669,7 +683,7 @@ function handleRealtimeEvent(event) {
 
 function runRealtimeFunction() {
     if(!adapter.config.useRealtime) return;
-    var updateTimer = soef.Timer();
+    var online, updateTimer = soef.Timer();
     var dev = new devices.CDevice('Realtime', 'Realtime');
     dev.set('online', false);
     dev.set('reconnect', false);
@@ -679,11 +693,19 @@ function runRealtimeFunction() {
         //dev.setChannel();
         //dev.setAndUpdate('online', { val: err ? false : true, common: { write: false }});
         //dev.setAndUpdate('online', err ? false : true);
-        devices.root.setAndUpdate('Realtime.online', err ? false : true);
+        //devices.root.setAndUpdate('Realtime.online', err ? false : true);
+        if (err) y5.setOnline(false);
     });
-    y5.start = runRealtimeFunction;
+    y5.setOnline = function (bo) {
+        if (bo !== online) devices.root.setAndUpdate('Realtime.online', bo);
+    };
+    //y5.start = runRealtimeFunction;
+    y5.setLog(adapter.log.debug);
+    //y5.start = y5.reconnect;
+    y5.start = y5.powerConnected;
     y5.onTimeout = onConnectionTimeout;
     y5.onData = function(data) {
+        y5.setOnline(true);
         data = data.toString().replace(/\r\n$/, '');
         adapter.log.debug('Rawdata: ' + data);
         var ar = data.split('\r\n');
@@ -811,7 +833,7 @@ function main() {
   
     // checkCase();
     // return;
-  
+
     checkIP(function() {
         setTimeout(updateStates, 1000);
         runRealtimeFunction();
@@ -857,4 +879,3 @@ function main() {
         });
     });
 }
-
