@@ -169,6 +169,7 @@ var commandMappings = {
     adaptiveDRC:        "adaptiveDRC:bo",
     allzones:           "allZones:bo",
     allZones:           "allZones:bo",
+    powerAllZones:      "allZones:bo",
     
     partymodeon:        "partyModeOn:bo",
     partyModeOn:        "partyModeOn:bo",
@@ -271,7 +272,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
             this.input(val);
              break;
         case "power":
-            p.bo ? this.powerOn() : this.allZones(false);
+            p.bo ? this.powerOn() : this.powerOff(); //this.allZones(false);
             break;
         case "refresh":
             if (p.bo) refreshStates();
@@ -826,6 +827,7 @@ function prepareAvailableInputs (inputObjs, features) {
 
 
 function main() {
+    
     normalizeConfig();
     repairConfig();
     yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
@@ -879,3 +881,4 @@ function main() {
         });
     });
 }
+

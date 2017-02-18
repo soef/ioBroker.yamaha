@@ -2,7 +2,7 @@
 
   "common": {
     "name": "yamaha",
-    "version": "0.3.2",
+    "version": "0.3.4",
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",
@@ -707,10 +707,10 @@
       "native": { }
     },
     {
-      "_id": "allZones",
+      "_id": "powerAllZones",
       "type": "state",
       "common": {
-        "name": "allZones",
+        "name": "PowerAllZones",
         "type": "boolean",
         "role": "state",
         "read": true,
