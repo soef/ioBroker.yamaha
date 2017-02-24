@@ -34,9 +34,9 @@ var adapter = utils.adapter({
         }
     },
     stateChange: function (id, state) {
-        devices.setrawval(soef.ns.no(id), state.val);
-        if (state && !state.ack) {
-            yamaha.execCommand(id, state.val);
+        if (state) {
+            devices.setrawval(soef.ns.no(id), state.val);
+            if (!state.ack) yamaha.execCommand(id, state.val);
         }
     },
     ready: function () {
@@ -260,7 +260,10 @@ YAMAHA.prototype.execCommand = function (id, val) {
                 case 'online': return;
                 case 'reconnect': soef.safeFunction(y5, "reconnect") (); return;
                 case 'raw': cmd = p.szVal; break;
-                default: cmd = soef.sprintf('@%s:%s=%s', ar[3], ar[4], p.szVal);
+                default:
+                    if (ar[4] === 'VOL' && p.szVal !== '?' && p.szVal.indexOf('.') < 0 && p.szVal.length < 4) p.szVal = p.szVal + '.0';
+                    cmd = soef.sprintf('@%s:%s=%s', ar[3], ar[4], p.szVal);
+                    break;
             }
             y5.send(cmd);
             return;
