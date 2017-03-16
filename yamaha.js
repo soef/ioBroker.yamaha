@@ -152,8 +152,6 @@ var commandMappings = {
     surround:           "setSurround:val",
     toggleMute:         "setMute:true",
     togglemute:         "setMute:true",
-    // input:              "setMainInputTo:val",
-    // inputEnum:          "setMainInputTo:val",
     input:              "input:val",
     inputEnum:          "input:val",
     stop:               "stop:zone",
@@ -305,179 +303,6 @@ YAMAHA.prototype.execCommand = function (id, val) {
     }
 };
 
-
-// YAMAHA.prototype.execCommand = function (id, val) {
-//
-//     var aS = id.split('.');
-//     id = id.toLowerCase();
-//     var bo = (val === 'true') || !!(val>>0);
-//     var as = id.split('.');
-//     if (!adapter._namespaceRegExp.test(id)) return;
-//     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
-//     var i = 2;
-//     var szVal = val.toString();
-//
-//     var p = {
-//         szVal: val.toString(),
-//         val: val,
-//         bo: bo
-//     };
-//
-//     switch(as[2]) {
-//         case 'commands':
-//             i = 3;
-//             break;
-//         case 'realtime':
-//             if (!y5) return;
-//             var cmd;
-//             switch (as[3]) {
-//                 case 'online': return;
-//                 case 'reconnect': soef.safeFunction(y5, "reconnect") (); return;
-//                 case 'raw': cmd = szVal; break;
-//                 default: cmd = soef.sprintf('@%s:%s=%s', aS[3], aS[4], szVal);
-//             }
-//             y5.send(cmd);
-//             return;
-//     }
-//     switch (as [i]) {
-//         case "volumeup":
-//             this.adjustVolume(val);
-//             break;
-//         case "volumedown":
-//             this.adjustVolume(-val);
-//             break;
-//         case "adjustvolume":
-//             this.adjustVolume(val);
-//             break;
-//         case "volume":
-//             this.setVolumeTo(val);
-//             break;
-//         case "power":
-//             //bo ? this.powerOn() : this.powerOff();
-//             bo ? this.powerOn() : this.allZones(false);
-//             break;
-//         case "refresh":
-//             if (bo) refreshStates();
-//             break;
-//         case "rccode":
-//             this.sendRcCode(val);
-//             break;
-//         case "mute":
-//             this.setMute(bo);
-//             break;
-//         // param = val
-//         case "surround":
-//             //this.setSurround(val);
-//             var fnName = as [i];
-//             fnName = 'set' + fnName.substr(0,1).toUpperCase() + fnName.substr(1);
-//             this[fnName] (val);
-//             break;
-//
-//         case "togglemute":
-//             //this.setMute(!!val);
-//             this.setMute(true);
-//             break;
-//         case "command":
-//             var ar = val.split(' ');
-//             this.execCommand(adapter.namespace + "." + "commands" + "." + ar[0], ar.length > 1 ? ar[1] : false);
-//             break;
-//         case "xmlcommand":
-//             val = val.replace(/\[/g, "<").replace(/\]/g, ">");
-//             var command = '<YAMAHA_AV cmd="PUT">' + val + '</YAMAHA_AV>';
-//             return this.SendXMLToReceiver(command);
-//         case "input":
-//             this.setMainInputTo(val);
-//             break;
-//
-//         case "stop":
-//         case "pause":
-//         case "skip":
-//         case "rewind":
-//             this[aS [i]](zone);
-//             break;
-//
-//         case "partymodeon":
-//         case "partymodeoff":
-//         case "ypaovolume":
-//         case "extrabass":
-//         case "adaptivedrc":
-//         case "allzones":
-//             this[aS [i]](bo);
-//             break;
-//
-//         case "partymode":
-//         /**/
-//         case "partymodeup":
-//         case "partymodedown":
-//         /**/
-//         case "setbassto":
-//         case "settrebleto":
-//         case "setsubwoofertrimto":
-//         case "setdialogliftto":
-//         case "setdialoglevelto":
-//         case "scene":
-//             this[aS [i]](szVal);
-//             break;
-//
-//         case "hdmiout1":
-//             this.setHDMIOutput(1, bo);
-//             break;
-//         case "hdmiout2":
-//             this.setHDMIOutput(2, bo);
-//             break;
-//         case "partymodevolumeup":
-//             this.partyModeUp(val);
-//             break;
-//         case "partymodedown": //??
-//             this.partyModeDown(val);
-//             break;
-//         case "bass":
-//             this.setBassTo(szVal);
-//             break;
-//         case "treble":
-//             this.setTrebleTo(szVal);
-//             break;
-//         case "subwooferlevel":
-//             this.setSubwooferTrimTo(szVal);
-//             break;
-//         case "dialoglift":
-//             this.setDialogLiftTo(szVal);
-//             break;
-//         case "dialoglevel":
-//             this.setDialogLevelTo(szVal);
-//             break;
-//
-//         case "inputto":
-//             this.setInputTo(val, zone);
-//             break;
-//         case "soundprogram":
-//         case "sleep":
-//             this[aS [i]](val, zone);
-//             break;
-//
-//         case "zone1":
-//             this.power(bo);
-//             break;
-//         case "zone2":
-//             this.power(bo, 'Zone_2');
-//             break;
-//         case "zone3":
-//             this.power(bo, 'Zone_3');
-//             break;
-//         case "zone4":
-//             this.power(bo, 'Zone_4');
-//             break;
-//         case "zone":
-//             zone = val;
-//             break;
-//         case "webradio":
-//             //this.switchToFavoriteNumber(2);
-//             //this.switchToWebRadioWithName(val);
-//             //this.setInputTo(zone, to);
-//             break;
-//     }
-// };
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var errorCount = 0;
@@ -485,24 +310,18 @@ var timeoutErrorCount = 0;
 
 function onConnectionTimeout() {
     if (peer) return;
-    //if(y5) y5.close();
     if(y5) {
         y5.close(false);
         y5.setOnline(false);
     }
-    devices.root.set("Realtime.online", false);
+    devices.root.setAndUpdate("Realtime.online", false);
     refreshTimer.clearAndInhibit();
-    adapter.log.debug('onConnectionTimeout: waiting for yamaha notification...')
+    adapter.log.debug('onConnectionTimeout: waiting for yamaha notification...');
     peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
         peer = null;
         refreshTimer.enable();
         adapter.log.debug('onConnectionTimeout: notification received!');
-        // setTimeout(yamaha.powerOn.bind(yamaha), 10000);
-        //setTimeout(yamaha.input.bind(yamaha, 'AV5'), 10000);
-        //yamaha.input('AV5');
-        
         setTimeout(updateStates, 10000);
-        //updateStates();
         if (y5) y5.start();
     });
     return true;
@@ -692,20 +511,13 @@ function runRealtimeFunction() {
     dev.set('online', false);
     dev.set('reconnect', false);
     dev.update();
-    //dev.setAndUpdate('online', false);
     y5 = Y5(adapter.config.ip, function (err) {
-        //dev.setChannel();
-        //dev.setAndUpdate('online', { val: err ? false : true, common: { write: false }});
-        //dev.setAndUpdate('online', err ? false : true);
-        //devices.root.setAndUpdate('Realtime.online', err ? false : true);
         if (err) y5.setOnline(false);
     });
     y5.setOnline = function (bo) {
         if (bo !== online) devices.root.setAndUpdate('Realtime.online', bo);
     };
-    //y5.start = runRealtimeFunction;
     y5.setLog(adapter.log.debug);
-    //y5.start = y5.reconnect;
     y5.start = y5.powerConnected;
     y5.onTimeout = onConnectionTimeout;
     y5.onData = function(data) {
@@ -718,7 +530,7 @@ function runRealtimeFunction() {
             dev.set('raw', v);
             handleRealtimeEvent(v);
             var a = /@(.*):(.*)=(.*)/.exec(v);
-            if (a && a.length > 3) {
+            if (a && a.length > 3 && a.indexOf('@') < 0 && a.inexOf(':') < 0) {
                 dev.setChannelEx(a[1]);
                 dev.set(a[2], a[3]);
             }
@@ -736,27 +548,27 @@ function normalizeConfig() {
 }
 
 
-function checkCase() {
-    
-    for (var n in commandMappings) {
-        var ar = commandMappings[n].split(':');
-        if (!yamaha[ar[0]])  {
-            console.log(ar[0]);
-        }
-    }
-    
-    adapter.ioPack.instanceObjects.forEach(function (v) {
-        var ar = v._id.split('.');
-        if (ar[0] === 'Commands' || ar.length === 1) {
-            var n = ar[ar.length - 1];
-            if (n !== n.toLowerCase()) {
-                var a = commandMappings[n];
-                var b = commandMappings[n.toLowerCase()];
-                if ((!a || b) && a !== b) console.log('ioPack._id=' + v._id + ' - commandMappings.lowercase: ' + b);
-            }
-        }
-    });
-}
+// function checkCase() {
+//
+//     for (var n in commandMappings) {
+//         var ar = commandMappings[n].split(':');
+//         if (!yamaha[ar[0]])  {
+//             console.log(ar[0]);
+//         }
+//     }
+//
+//     adapter.ioPack.instanceObjects.forEach(function (v) {
+//         var ar = v._id.split('.');
+//         if (ar[0] === 'Commands' || ar.length === 1) {
+//             var n = ar[ar.length - 1];
+//             if (n !== n.toLowerCase()) {
+//                 var a = commandMappings[n];
+//                 var b = commandMappings[n.toLowerCase()];
+//                 if ((!a || b) && a !== b) console.log('ioPack._id=' + v._id + ' - commandMappings.lowercase: ' + b);
+//             }
+//         }
+//     });
+// }
 
 
 function setPossibleStates(id, objarr, options, cb) {
@@ -833,7 +645,8 @@ function main() {
     
     normalizeConfig();
     repairConfig();
-    yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
+    //yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
+    yamaha = new YAMAHA(adapter.config.ip, undefined, 2000);
     yamaha.dontCatchRequestErrors = true;
   
     // checkCase();

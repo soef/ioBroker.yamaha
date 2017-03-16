@@ -1,7 +1,13 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.5",
+    "version": "0.3.6",
+    "news": {
+      "0.3.6": {
+        "en": "timeout to connect reduced",
+        "de": "Verbindungs-Timeout reduziert"
+      }
+    },
     "title": "Yamaha",
     "desc": "Yamaha AVR Adapter",
     "platform": "Javascript/Node.js",
@@ -289,20 +295,20 @@
       "native": { }
     },
     {
-    "_id": "Commands.stop",
-    "type": "state",
-    "common": {
-      "name": "Stop",
-      "type": "boolean",
-      "role": "media.stop",
-      "read": true,
-      "write": true,
-      "min": false,
-      "max": true,
-      "def": false,
-      "desc": "Stop"
-    },
-    "native": { }
+      "_id": "Commands.stop",
+      "type": "state",
+      "common": {
+        "name": "Stop",
+        "type": "boolean",
+        "role": "media.stop",
+        "read": true,
+        "write": true,
+        "min": false,
+        "max": true,
+        "def": false,
+        "desc": "Stop"
+      },
+      "native": { }
     },
     {
       "_id": "Commands.pause",
