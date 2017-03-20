@@ -22,7 +22,7 @@ function clearPeer() {
 
 var adapter = utils.adapter({
     name: 'yamaha',
-
+    
     unload: function (callback) {
         try {
             if (y5) y5.close();
@@ -58,17 +58,17 @@ function getZone(zone) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if (!YAMAHA.prototype.sendCommand) {
-
+    
     YAMAHA.prototype.sendCommand = function (command, zone) {
         zone = getZone(zone);
         var command = '<YAMAHA_AV cmd="PUT"><' + zone + '>' + command + '</' + zone + '></YAMAHA_AV>';
         return this.SendXMLToReceiver(command);
     };
-
+    
     YAMAHA.prototype.setMute = function (to) {
         return this.sendCommand('<Volume><Mute>' + (to ? "On" : "Off") + '</Mute></Volume>');
     };
-
+    
     YAMAHA.prototype.sendRcCode = function (code) {   // 7C80 = Power on/off
         if (typeof code == 'number') {
             code = code.toString(16);
@@ -78,11 +78,11 @@ if (!YAMAHA.prototype.sendCommand) {
         //var command = '<YAMAHA_AV cmd="PUT"><Main_Zone><Remote_Control><RC_Code>' + code + '</RC_Code></Remote_Control></Main_Zone></YAMAHA_AV>';
         //var command = '<YAMAHA_AV cmd="PUT"><System><Misc><Remote_Signal><Receive><Code>' + code + '</Code></Receive></Remote_Signal></Misc></System></YAMAHA_AV>';
         //var command = '<YAMAHA_AV cmd="PUT"><System><Remote_Signal><Receive><Code>' + code + '</Code></Receive></Remote_Signal></System></YAMAHA_AV>';
-
+        
         var command = '<YAMAHA_AV cmd="PUT"><System><Remote_Control><RC_Code>' + code + '</RC_Code></Remote_Control></System></YAMAHA_AV>';
         return this.SendXMLToReceiver(command);
     };
-
+    
     YAMAHA.prototype.setPureDirect = function (bo) {
         return this.sendCommand('<Sound_Video><Pure_Direct><Mode>' + (bo ? 'On' : 'Off') + '</Mode></Pure_Direct></Sound_Video>');
     };
@@ -99,7 +99,7 @@ if (!YAMAHA.prototype.sendCommand) {
     YAMAHA.prototype.allZones = function (bo) {
         return this.sendCommand('<Power_Control><Power>' + (bo ? 'On' : 'Standby') + '</Power></Power_Control>', 'System');
     };
-
+    
     YAMAHA.prototype.sleep = function (val, zone) {
         if (val < 30) val = 'Off';
         else if (val < 60) val = '30 min';
@@ -108,7 +108,7 @@ if (!YAMAHA.prototype.sendCommand) {
         else val = '120 min';
         return this.sendCommand('<Power_Control><Sleep>' + val + '</Sleep></Power_Control>', zone);
     };
-
+    
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ var commandMappings = {
     pause:              "pause:zone",
     skip:               "skip:zone",
     rewind:             "rewind:zone",
-
+    
     ypaovolume:         "YPAOVolume:bo",
     YPAOVolume:         "YPAOVolume:bo",
     extrabass:          "extraBass:bo",
@@ -168,7 +168,7 @@ var commandMappings = {
     allzones:           "allZones:bo",
     allZones:           "allZones:bo",
     powerAllZones:      "allZones:bo",
-
+    
     partymodeon:        "partyModeOn:bo",
     partyModeOn:        "partyModeOn:bo",
     partymodeoff:       "partyModeOff:bo",
@@ -186,7 +186,7 @@ var commandMappings = {
     setDialogLiftTo:    "setDialogLiftTo:szVal",
     setDialogLevelTo:   "setDialogLevelTo:szVal",
     scene:              "scene:szVal",
-
+    
     partyModeVolumeUp:  "partyModeUp:val",
     partyModeVolumeDown:"partyModeDown:val",
     bass:               "setBassTo:szVal",
@@ -195,7 +195,7 @@ var commandMappings = {
     dialogLift:         "setDialogLiftTo:szVal",
     dialogLevel:        "setDialogLevelTo:szVal",
     pureDirect:         "setPureDirect:bo",
-
+    
     zone1:              "power:bo",
     zone2:              "power:bo:Zone_2",
     zone3:              "power:bo:Zone_3",
@@ -203,7 +203,7 @@ var commandMappings = {
     sleep:              "sleep:val:zone",
     soundprogram:       "setSurround:val",
     setSurround:        "setSurround:val",
-
+    
     hdmiOut1:           "setHDMIOutput:1:bo",
     hdmiOut2:           "setHDMIOutput:2:bo",
     inputto:            "setInputTo:val:zone",
@@ -234,10 +234,10 @@ YAMAHA.prototype.input = function(val) {
 
 
 YAMAHA.prototype.execCommand = function (id, val) {
-
+    
     if (!adapter._namespaceRegExp.test(id)) return;
     var ar = id.split('.');
-
+    
     var p = Object.assign ({}, defaultParams, {
         bo: (val === 'true') || !!(val >> 0),
         val: val,
@@ -246,7 +246,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
     });
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
     var commandName = ar[2];
-
+    
     switch(commandName) {
         case 'Commands':
             commandName = ar[3];
@@ -266,12 +266,12 @@ YAMAHA.prototype.execCommand = function (id, val) {
             y5.send(cmd);
             return;
     }
-
+    
     switch (commandName) {
         case 'input':
         case 'inputEnum':
             this.input(val);
-             break;
+            break;
         case "power":
             p.bo ? this.powerOn() : this.powerOff(); //this.allZones(false);
             break;
@@ -294,7 +294,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
             //this.switchToWebRadioWithName(val);
             //this.setInputTo(zone, to);
             break;
-
+        
         default:
             var cmd = commandMappings[commandName];
             if (cmd === undefined) return;
@@ -364,7 +364,7 @@ function refreshStates(cb) {
                 try {
                     dev.set("pureDirect", basicStatus.isPureDirectEnabled());
                 } catch (e) {
-
+                    
                 }
                 var _basicStatus = basicStatus.YAMAHA_AV.Main_Zone[0].Basic_Status[0];
                 dev.set('surround', _basicStatus.Surround[0].Program_Sel[0].Current[0].Sound_Program[0]);
@@ -608,7 +608,7 @@ function loadDesc() {
         var reSoundProgram = /.*(\">Hall in Munich.*?)<\/Param_1>.*/;
         //var reg = new RegExp(/\">([^>]*)<\/Direct>/g);
         var reLoop = /\">([^>]*)<\/Direct>/g;
-
+        
         var ar = reSoundProgram.exec(data);
         if (!ar || ar.length < 2) return;
         var name;
@@ -622,7 +622,7 @@ function loadDesc() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function prepareAvailableInputs (inputObjs, features) {
-
+    
     namedInputs = {};
     var inputs = [];
     for (var i in inputObjs) {
@@ -642,49 +642,49 @@ function prepareAvailableInputs (inputObjs, features) {
 
 
 function main() {
-
+    
     normalizeConfig();
     repairConfig();
     //yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
     yamaha = new YAMAHA(adapter.config.ip, undefined, 2000);
     yamaha.dontCatchRequestErrors = true;
-
+    
     // checkCase();
     // return;
-
+    
     checkIP(function() {
         setTimeout(updateStates, 1000);
         runRealtimeFunction();
-
+        
         adapter.subscribeStates('*');
-
+        
         loadDesc();
-
+        
         //yamaha.getWebRadioList().done(function (v) {
         //    console.log(JSON.stringify(v));
         //});
         // yamaha.getList("NET_RADIO").done(function (v) {
         //     console.log(JSON.stringify(v));
         // });
-
+        
         // callWithCatch(yamaha.getAvailableInputs(), function (inputs) {
         //     adapter.log.debug("getAvailableInputs: " + JSON.stringify(inputs));
         //     inputs = inputs.concat (["AirPlay", "NET_RADIO", "Napster", "Spotify"]);
         //     setPossibleStates("input", inputs);
         // });
-
+        
         callWithCatch(yamaha.getSystemConfig(), function (v) {
             //adapter.log.debug("getSystemConfig: " + JSON.stringify(v));
             var dev, features, inputObjs, config = soef.getProp(v, "YAMAHA_AV.System.0.Config.0");
             if (!config) return;
-
+            
             if (features = soef.getProp(config, "Feature_Existence.0")) for (var i in features) {
                 features[i] = !!(features[i][0] >> 0);
             }
             if (inputObjs = soef.getProp(config, "Name.0.Input.0")) {
                 prepareAvailableInputs(inputObjs, features);
             }
-
+            
             dev = new devices.CDevice('SystemConfig');
             dev.set("name", config.Model_Name[0]);
             dev.set("version", config.Version[0]);

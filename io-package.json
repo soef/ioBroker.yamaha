@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "news": {
+      "0.3.7": {
+        "en": "fix typo in creating realtime states",
+        "de": "Tippfehler beim Setzen der Realtime Datenpunkte"
+      },
       "0.3.6": {
         "en": "timeout to connect reduced",
         "de": "Verbindungs-Timeout reduziert"
