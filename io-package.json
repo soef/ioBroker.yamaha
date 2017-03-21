@@ -1,8 +1,16 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.7",
+    "version": "0.3.9",
     "news": {
+      "0.3.9": {
+        "en": "realtime Ping now configurable",
+        "de": "Echtzeit-Ping nun konfigurierbar"
+      },
+      "0.3.8": {
+        "en": "realtime states optimized",
+        "de": "Optimierung der Echtzeit-Datenpunkte"
+      },
       "0.3.7": {
         "en": "fix typo in creating realtime states",
         "de": "Tippfehler beim Setzen der Realtime Datenpunkte"
