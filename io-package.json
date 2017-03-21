@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.9",
+    "version": "0.3.10",
     "news": {
-      "0.3.9": {
+      "0.3.10": {
         "en": "realtime Ping now configurable",
         "de": "Echtzeit-Ping nun konfigurierbar"
       },

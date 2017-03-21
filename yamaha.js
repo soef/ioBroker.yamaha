@@ -522,7 +522,7 @@ function runRealtimeFunction() {
     y5.setOnline = function (bo) {
         if (bo !== online) devices.root.setAndUpdate('Realtime.online', bo);
     };
-    if (adapter.config.realtimePing !== undefined) y5.pingMainPowerInterval = adapter.config.realtimePing;
+    if (adapter.config.realtimePing !== undefined) y5.pingMainPowerInterval = adapter.config.realtimePing * 1000;
     y5.setLog(adapter.log.debug);
     y5.start = y5.powerConnected;
     y5.onTimeout = onConnectionTimeout;
