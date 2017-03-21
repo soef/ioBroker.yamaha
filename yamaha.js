@@ -412,8 +412,8 @@ function refreshStates(cb) {
 function updateStates() {
     refreshTimer.clear();
     refreshStates(function(err) {
-        if (adapter.config.intervall) {
-            refreshTimer.set(updateStates, adapter.config.intervall * 1000);
+        if (adapter.config.interval) {
+            refreshTimer.set(updateStates, adapter.config.interval * 1000);
         }
     });
 }
@@ -446,15 +446,19 @@ function repairObjects(callback) {
 
 function repairConfig () {
     repairObjects();
-    if (adapter.config.IP === undefined && adapter.config.Intervall === undefined) {
+    if (adapter.config.IP === undefined && adapter.config.Intervall === undefined && adapter.config.intervall === undefined) {
         return;
     }
     soef.changeConfig(function (config) {
         var changed = false;
-        if (config.Intervall != undefined) {
+        if (config.intervall !== undefined) {
+            delete config.intervall;
+            changed = true;
+        }
+        if (config.Intervall !== undefined) {
             delete config.Intervall;
-            if (!config.intervall) {
-                config.intervall = 120;
+            if (config.interval === undefined) {
+                config.interval = 120;
             }
             changed = true;
         }
@@ -487,20 +491,21 @@ function checkIP(callback) {
 }
 
 function handleRealtimeEvent(event) {
+    event = event.replace(/^@/, '');
     switch (event) {
-        case '@ZONE2:PWR=On': devices.root.setAndUpdate('zone2', true); return;
-        case '@ZONE3:PWR=On': devices.root.setAndUpdate('zone3', true); return;
-        case '@ZONE4:PWR=On': devices.root.setAndUpdate('zone4', true); return;
-        case '@ZONE2:PWR=Standby': devices.root.setAndUpdate('zone2', false); return;
-        case '@ZONE3:PWR=Standby': devices.root.setAndUpdate('zone3', false); return;
-        case '@ZONE4:PWR=Standby': devices.root.setAndUpdate('zone4', false); return;
+        case 'ZONE2:PWR=On': devices.root.setAndUpdate('zone2', true); return;
+        case 'ZONE3:PWR=On': devices.root.setAndUpdate('zone3', true); return;
+        case 'ZONE4:PWR=On': devices.root.setAndUpdate('zone4', true); return;
+        case 'ZONE2:PWR=Standby': devices.root.setAndUpdate('zone2', false); return;
+        case 'ZONE3:PWR=Standby': devices.root.setAndUpdate('zone3', false); return;
+        case 'ZONE4:PWR=Standby': devices.root.setAndUpdate('zone4', false); return;
     }
     if (adapter.config.refreshOnRealtime) return;
     switch (event) {
-        case '@ZONE1:PWR=On': devices.root.setAndUpdate('zone1', true); break;
-        case '@ZONE1:PWR=Standby': devices.root.setAndUpdate('zone1', false); break;
-        case '@MAIN:PWR=On': devices.root.setAndUpdate('power', true); break;
-        case '@MAIN:PWR=Standby': devices.root.setAndUpdate('power', false); break;
+        case 'ZONE1:PWR=On': devices.root.setAndUpdate('zone1', true); break;
+        case 'ZONE1:PWR=Standby': devices.root.setAndUpdate('zone1', false); break;
+        case 'MAIN:PWR=On': devices.root.setAndUpdate('power', true); break;
+        case 'MAIN:PWR=Standby': devices.root.setAndUpdate('power', false); break;
     }
 }
 
@@ -517,20 +522,22 @@ function runRealtimeFunction() {
     y5.setOnline = function (bo) {
         if (bo !== online) devices.root.setAndUpdate('Realtime.online', bo);
     };
+    if (adapter.config.realtimePing !== undefined) y5.pingMainPowerInterval = adapter.config.realtimePing;
     y5.setLog(adapter.log.debug);
     y5.start = y5.powerConnected;
     y5.onTimeout = onConnectionTimeout;
     y5.onData = function(data) {
         y5.setOnline(true);
-        data = data.toString().replace(/\r\n$/, '');
+        data = data.toString().replace(/^@|\r|\n/g, '');
         adapter.log.debug('Rawdata: ' + data);
-        var ar = data.split('\r\n');
+        var ar = data.split('@');
         ar.forEach(function (v) {
             dev.setChannel();
-            dev.set('raw', v);
+            dev.set('raw', '@' + v);
             handleRealtimeEvent(v);
-            var a = /@(.*):(.*)=(.*)/.exec(v);
-            if (a && a.length > 3 && a.indexOf('@') < 0 && a.indexOf(':') < 0) {
+            //var a = /^@(.*):(.*)=(.*)/.exec(v);
+            var a = /(.*):(.*)=(.*)/.exec(v);
+            if (a && a.length > 3) {
                 dev.setChannelEx(a[1]);
                 dev.set(a[2], a[3]);
             }
@@ -544,7 +551,7 @@ function runRealtimeFunction() {
 
 function normalizeConfig() {
     adapter.config.useRealtime = adapter.config.useRealtime || true;
-    adapter.config.intervall = adapter.config.intervall >> 0;
+    adapter.config.interval = adapter.config.interval >> 0;
 }
 
 
@@ -646,7 +653,7 @@ function main() {
     normalizeConfig();
     repairConfig();
     //yamaha = new YAMAHA(adapter.config.ip, undefined, 15000);
-    yamaha = new YAMAHA(adapter.config.ip, undefined, 2000);
+    yamaha = new YAMAHA(adapter.config.ip, undefined, 3000);
     yamaha.dontCatchRequestErrors = true;
     
     // checkCase();
@@ -661,7 +668,7 @@ function main() {
         loadDesc();
         
         //yamaha.getWebRadioList().done(function (v) {
-        //    console.log(JSON.stringify(v));
+            //    console.log(JSON.stringify(v));
         //});
         // yamaha.getList("NET_RADIO").done(function (v) {
         //     console.log(JSON.stringify(v));

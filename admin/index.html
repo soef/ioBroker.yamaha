@@ -6,18 +6,6 @@
 <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 <script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
 
-
-<!-- optional: use jqGrid
-<link rel="stylesheet" type="text/css" href="../../lib/css/jqGrid/ui.jqgrid-4.5.4.css"/>
-<script type="text/javascript" src="../../lib/js/jqGrid/jquery.jqGrid-4.5.4.min.js"></script>
-<script type="text/javascript" src="../../lib/js/jqGrid/i18n/grid.locale-all.js"></script>
--->
-
-<!-- optional: use multiselect
-<link rel="stylesheet" type="text/css" href="../../lib/css/jquery.multiselect-1.13.css"/>
-<script type="text/javascript" src="../../lib/js/jquery.multiselect-1.13.min.js"></script>
--->
-
 <!-- these two file always have to be included -->
 <link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <script type="text/javascript" src="../../js/translate.js"></script>
@@ -33,11 +21,11 @@
         },
         "IP": {
             "en": "IP",
-            "de": "IP",
+            "de": "IP"
         },
-        "Intervall": {
-            "en": "Update Intervall (Seconds)",
-            "de": "Update Intervall (Sekunden)",
+        "Interval": {
+            "en": "Update Interval (Seconds)",
+            "de": "Update Intervall (Sekunden)"
         },
         "Info": {
             "de": "Hinweis",
@@ -52,18 +40,57 @@
             "en": "Use Realtime Calls"
         },
         "refreshOnRealtime": {
-            "de": "Alle States in Echtzeit neu einlesen",
-            "en": "Refresh all states on realtime calls"
+            "de": "Bei einem Echtzeit Event alle Datenpunkte neu einlesen",
+            "en": "Refresh all states on realtime events"
         },
         "on save adapter restarts with new config immediately": {
             "de": "Beim Speichern der Einstellungen wird der Adapter automatisch neu gestartet.",
             "en": "On save adapter restarts with new config immediately",
             "ru": "Сразу после сохранения настроек драйвер перезапуститься с новыми значениями"
+        },
+        "Ping interval": {
+            "en": "Interval to ping the connection in sec, (0=none)",
+            "de": "Ping-Intervall für Echtzeit-Verbindung in Sekunden (0=ohne)"
+        },
+        "Realtime Options": {
+            "en": "Realtime options",
+            "de": "Echtzeit-Optionen (Realtime)"
         }
     };
 
 
+    //    function setValue(id, value, onChange) {
+    //        var $value = $('#' + id + '.value');
+    //
+    //        if ($value.attr('type') === 'checkbox') {
+    //            $value.prop('checked', value).change(function() {
+    //                if ($(this).attr('id') === 'useRealtime') {
+    //                    $('#interval').prop('disabled', !$(this).prop('checked'));
+    //                }
+    //                onChange();
+    //            });
+    //        }
+    //    }
+
+
     function load(settings, onChange) {
+
+        if (!settings) return;
+        if (settings.realtimePing === undefined) settings.realtimePing = 30;
+        if (settings.interval === undefined) {
+            settings.interval = 0;
+        }
+
+
+//        for (var key in settings) {
+//            if (!settings.hasOwnProperty(key)) continue;
+//            setValue(key, settings[key], onChange);
+//        }
+//
+//        $('#interval').prop('disabled', !$('#useRealtime').prop('checked'));
+
+
+
         for (var key in settings) {
             if ($('#' + key + '.value').attr('type') == 'checkbox') {
                 $('#' + key + '.value').prop('checked', settings[key]).change(function () {
@@ -80,20 +107,53 @@
         onChange(false);
     }
 
+
+    //    function save(callback) {
+    //        var obj = {};
+    //        $('.value').each(function () {
+    //            var $this = $(this);
+    //            var id = $this.attr('id');
+    //
+    //            if ($this.attr('type') == 'checkbox') {
+    //                obj[$this.attr('id')] = $this.prop('checked');
+    //            } else {
+    //                obj[$this.attr('id')] = $this.val();
+    //            }
+    //        });
+    //        callback(obj);
+    //    }
+
+    function setVal(obj, id, val) {
+//        var ar = id.split(SEP);
+//        for (var i=0; i<ar.length-1; i++) {
+//            if (obj[ar[i]] === undefined) obj[ar[i]] = {};
+//            obj = obj[ar[i]];
+//        }
+//        obj[ar[ar.length-1]] = val;
+        obj[id] = val;
+    }
+
     function save(callback) {
         var obj = {};
+        //changed = true;
         $('.value').each(function () {
-            var $this = $(this);
-            var id = $this.attr('id');
-
-            if ($this.attr('type') == 'checkbox') {
-                obj[$this.attr('id')] = $this.prop('checked');
-            } else {
-                obj[$this.attr('id')] = $this.val();
+            var $this = $(this), val;
+            switch ($this.attr('type')) {
+                case 'checkbox':
+                    val = $this.prop('checked');
+                    break;
+                case 'number':
+                case 'value':
+                    val = ~~$this.val();
+                    break;
+                default:
+                    val = $this.val();
             }
+            setVal(obj, $this.attr('id'), val);
         });
         callback(obj);
     }
+
 
 </script>
 
@@ -134,9 +194,15 @@
 
     <table>
         <tr><td class="translate">IP</td><td><input class="value" id="ip" type="input" size="20" /></td></tr>
-        <tr><td class="translate">Intervall</td><td><input class="value" id="intervall" type="input" size="8" /></td></tr>
+        <tr><td class="translate">Interval</td><td><input class="value" id="interval" type="value" size="3" /></td></tr>
+        <!--tr><td class="translate">Use Realtime</td><td><input class="value" id="useRealtime" type="checkbox" /></td></tr-->
+        <!--tr><td class="translate">refreshOnRealtime</td><td><input class="value" id="refreshOnRealtime" type="checkbox" /></td></tr-->
+    </table>
+    <h1 class="translate">Realtime Options</h1>
+    <table>
         <tr><td class="translate">Use Realtime</td><td><input class="value" id="useRealtime" type="checkbox" /></td></tr>
         <tr><td class="translate">refreshOnRealtime</td><td><input class="value" id="refreshOnRealtime" type="checkbox" /></td></tr>
+        <tr><td class="translate">Ping interval</td><td><input class="value" id="realtimePing" type="value" size="3"/></td></tr>
     </table>
 
     <div style="padding: 10px"></div>

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.yamaha",
-  "version": "0.3.7",
+  "version": "0.3.9",
   "description": "ioBroker Yamaha Adapter",
   "author": {
     "name": "soef",
@@ -24,7 +24,7 @@
   "dependencies": {
     "peer-ssdp": "0.0.5",
     "request": "^2.40.0",
-    "soef": "^0.1.46",
+    "soef": "^0.2.1",
     "y5": "^0.1.0",
     "yamaha-nodejs-soef": "^0.7.0"
   },
