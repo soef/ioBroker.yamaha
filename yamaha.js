@@ -13,10 +13,10 @@ var yamaha,
     refreshTimer = soef.Timer();
 
 soef.extendArray();
-function clearPeer() {
+function closePeer() {
     if (peer) {
         peer.close();
-        peer = null;
+        peer = undefined;
     }
 }
 
@@ -25,9 +25,9 @@ var adapter = utils.adapter({
     
     unload: function (callback) {
         try {
-            if (y5) y5.close();
+            if (y5) y5.close(true);
             refreshTimer.clear();
-            clearPeer();
+            closePeer();
             setTimeout(callback, 1700);
         } catch (e) {
             callback();
@@ -215,15 +215,15 @@ for (var i in commandMappings) {
 }
 
 
-var defaultParams = {
-    true: true,
-    false: false,
-    1: 1,
-    2: 2,
-    result: function(idx) {
-        return this [idx] !== undefined ? this [idx] : idx;
-    }
-};
+// var defaultParams = {
+//     true: true,
+//     false: false,
+//     1: 1,
+//     2: 2,
+//     result: function(idx) {
+//         return this [idx] !== undefined ? this [idx] : idx;
+//     }
+// };
 
 
 YAMAHA.prototype.input = function(val) {
@@ -232,18 +232,39 @@ YAMAHA.prototype.input = function(val) {
     this.setMainInputTo(val);
 };
 
+var defaultParams = {
+    val: undefined,
+    true: true,
+    false: false,
+    1: 1,
+    2: 2,
+    get bo() {
+        return (this.val === 'true') || !!(this.val >> 0);
+    },
+    get szVal() {
+        return this.val.toString ();
+    },
+    result: function(idx) {
+        return this [idx] !== undefined ? this [idx] : idx;
+    }
+};
+
 
 YAMAHA.prototype.execCommand = function (id, val) {
     
     if (!adapter._namespaceRegExp.test(id)) return;
     var ar = id.split('.');
+
+    var p = defaultParams;
+    p.val = val;
+    p.zone = zone;
     
-    var p = Object.assign ({}, defaultParams, {
-        bo: (val === 'true') || !!(val >> 0),
-        val: val,
-        szVal: val.toString(),
-        zone: zone
-    });
+    // var p = Object.assign ({}, defaultParams, {
+    //     bo: (val === 'true') || !!(val >> 0),
+    //     val: val,
+    //     szVal: val.toString(),
+    //     zone: zone
+    // });
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
     var commandName = ar[2];
     
@@ -256,11 +277,19 @@ YAMAHA.prototype.execCommand = function (id, val) {
             var cmd;
             switch (ar[3]) {
                 case 'online': return;
-                case 'reconnect': soef.safeFunction(y5, "reconnect") (); return;
+                //case 'reconnect': soef.safeFunction(y5, "reconnect") (); return;
+                case 'reconnect':
+                    closePeer(); // close existing waitForNotify
+                    if (p.bo) soef.safeFunction(y5, "setReconnectTimer") (0);
+                    else {
+                        onConnectionTimeout();  // wait until power is back
+                    }
+                    return;
                 case 'raw': cmd = p.szVal; break;
                 default:
-                    if (ar[4] === 'VOL' && p.szVal !== '?' && p.szVal.indexOf('.') < 0 && p.szVal.length < 4) p.szVal = p.szVal + '.0';
-                    cmd = soef.sprintf('@%s:%s=%s', ar[3], ar[4], p.szVal);
+                    var szVal = p.szVal;
+                    if (ar[4] === 'VOL' && szVal !== '?' && szVal.indexOf('.') < 0 && szVal.length < 4) szVal = szVal + '.0';
+                    cmd = soef.sprintf('@%s:%s=%s', ar[3], ar[4], szVal);
                     break;
             }
             y5.send(cmd);
@@ -283,7 +312,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
             this.execCommand(adapter.namespace + "." + "commands" + "." + a[0], a.length > 1 ? a[1] : false);
             break;
         case "xmlCommand":
-            val = val.replace(/\[/g, "<").replace(/\]/g, ">");
+            val = val.replace(/\[/g, "<").replace(/]/g, ">");
             var command = '<YAMAHA_AV cmd="PUT">' + val + '</YAMAHA_AV>';
             return this.SendXMLToReceiver(command);
         case "zone":
@@ -309,7 +338,8 @@ var errorCount = 0;
 var timeoutErrorCount = 0;
 
 function onConnectionTimeout() {
-    if (peer) return;
+    if (peer !== undefined) return;
+    peer = false;
     if(y5) {
         y5.close(false);
         y5.setOnline(false);
@@ -317,20 +347,44 @@ function onConnectionTimeout() {
     devices.root.setAndUpdate("Realtime.online", false);
     refreshTimer.clearAndInhibit();
     adapter.log.debug('onConnectionTimeout: waiting for yamaha notification...');
-    peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
-        peer = null;
-        refreshTimer.enable();
+
+    // function restart() {
+    //     if (peer === undefined) return;
+    //     peer = undefined;
+    //     refreshTimer.enable();
+    //     adapter.log.debug('onConnectionTimeout: notification received!');
+    //     setTimeout(updateStates, 10000);
+    //     y5 && y5.setReconnectTimer(10000);
+    // }
+    function restart() {
+        if (peer === undefined) return;
         adapter.log.debug('onConnectionTimeout: notification received!');
-        setTimeout(updateStates, 10000);
-        if (y5) y5.start();
-    });
+        y5 && y5.restart(10000);
+    }
+    
+    yamaha.discover(function(ip, name) {
+        if (ip === adapter.config.ip) return restart();
+        peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
+            restart ();
+        });
+    }, 2000);
     return true;
+   
+    // peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
+    //     restart();
+    //     // peer = null;
+    //     // refreshTimer.enable();
+    //     // adapter.log.debug('onConnectionTimeout: notification received!');
+    //     // setTimeout(updateStates, 10000);
+    //     // if (y5) y5.start();
+    // });
+    // return true;
 }
 
 function callWithCatch(origPromise, onSucess, onError){
     return origPromise.then(function (result) {
         if (errorCount) {
-            clearPeer();
+            closePeer();
             errorCount = 0;
             timeoutErrorCount = 0;
         }
@@ -516,18 +570,31 @@ function runRealtimeFunction() {
     dev.set('online', false);
     dev.set('reconnect', false);
     dev.update();
-    y5 = Y5(adapter.config.ip, function (err) {
-        if (err) y5.setOnline(false);
-    });
-    y5.setOnline = function (bo) {
+    function setOnline (bo) {
         if (bo !== online) devices.root.setAndUpdate('Realtime.online', bo);
-    };
+    }
+    y5 = new Y5(adapter.config.ip, 4000, function (err) {
+        if (err) setOnline(false);
+    });
     if (adapter.config.realtimePing !== undefined) y5.pingMainPowerInterval = adapter.config.realtimePing * 1000;
+    y5.setOnline = setOnline;
+    y5.restart = function (timeout) {
+        closePeer();
+        refreshTimer.enable();
+        adapter.log.debug('y5.restart');
+        setTimeout(updateStates, timeout);
+        this.setReconnectTimer(timeout);
+    };
     y5.setLog(adapter.log.debug);
-    y5.start = y5.powerConnected;
+    y5.restart = function (delay) {
+        y5.close(true);
+        y5 = null;
+        closePeer();
+        setTimeout(runRealtimeFunction, delay || 1000);
+    };
     y5.onTimeout = onConnectionTimeout;
     y5.onData = function(data) {
-        y5.setOnline(true);
+        setOnline(true);
         data = data.toString().replace(/^@|\r|\n/g, '');
         adapter.log.debug('Rawdata: ' + data);
         var ar = data.split('@');
@@ -613,7 +680,6 @@ function loadDesc() {
         if (err || !data) return;
         var soundPrograms = [];
         var reSoundProgram = /.*(\">Hall in Munich.*?)<\/Param_1>.*/;
-        //var reg = new RegExp(/\">([^>]*)<\/Direct>/g);
         var reLoop = /\">([^>]*)<\/Direct>/g;
         
         var ar = reSoundProgram.exec(data);

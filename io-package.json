@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.10",
+    "version": "0.3.11",
     "news": {
+      "0.3.11": {
+        "en": "reconnect overworked",
+        "de": "Reconnect überarbeitet"
+      },
       "0.3.10": {
         "en": "realtime Ping now configurable",
         "de": "Echtzeit-Ping nun konfigurierbar"
