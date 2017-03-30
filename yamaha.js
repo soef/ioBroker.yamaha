@@ -25,6 +25,7 @@ var adapter = utils.adapter({
     
     unload: function (callback) {
         try {
+            //adapter.setState(adapter.namespace + '.Realtime.MAIN.PWR', 'unloaded');
             if (y5) y5.close(true);
             refreshTimer.clear();
             closePeer();
@@ -244,6 +245,9 @@ var defaultParams = {
     get szVal() {
         return this.val.toString ();
     },
+    get zone() {
+        return zone;
+    },
     result: function(idx) {
         return this [idx] !== undefined ? this [idx] : idx;
     }
@@ -257,14 +261,7 @@ YAMAHA.prototype.execCommand = function (id, val) {
 
     var p = defaultParams;
     p.val = val;
-    p.zone = zone;
     
-    // var p = Object.assign ({}, defaultParams, {
-    //     bo: (val === 'true') || !!(val >> 0),
-    //     val: val,
-    //     szVal: val.toString(),
-    //     zone: zone
-    // });
     adapter.log.debug('execCommand: id=' + id + ' val=' + val);
     var commandName = ar[2];
     
@@ -347,38 +344,16 @@ function onConnectionTimeout() {
     devices.root.setAndUpdate("Realtime.online", false);
     refreshTimer.clearAndInhibit();
     adapter.log.debug('onConnectionTimeout: waiting for yamaha notification...');
-
-    // function restart() {
-    //     if (peer === undefined) return;
-    //     peer = undefined;
-    //     refreshTimer.enable();
-    //     adapter.log.debug('onConnectionTimeout: notification received!');
-    //     setTimeout(updateStates, 10000);
-    //     y5 && y5.setReconnectTimer(10000);
-    // }
-    function restart() {
-        if (peer === undefined) return;
-        adapter.log.debug('onConnectionTimeout: notification received!');
-        y5 && y5.restart(10000);
-    }
     
     yamaha.discover(function(ip, name) {
         if (ip === adapter.config.ip) return restart();
         peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
-            restart ();
+            if (peer === undefined) return;
+            adapter.log.debug('onConnectionTimeout: notification received!');
+            y5 && y5.restart(10000);
         });
     }, 2000);
     return true;
-   
-    // peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
-    //     restart();
-    //     // peer = null;
-    //     // refreshTimer.enable();
-    //     // adapter.log.debug('onConnectionTimeout: notification received!');
-    //     // setTimeout(updateStates, 10000);
-    //     // if (y5) y5.start();
-    // });
-    // return true;
 }
 
 function callWithCatch(origPromise, onSucess, onError){
@@ -732,7 +707,7 @@ function main() {
         adapter.subscribeStates('*');
         
         loadDesc();
-        
+    
         //yamaha.getWebRadioList().done(function (v) {
             //    console.log(JSON.stringify(v));
         //});

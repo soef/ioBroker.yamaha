@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.11",
+    "version": "0.3.12",
     "news": {
+      "0.3.12": {
+        "en": "Version incr. for npm",
+        "de": "Version fr npm erhöht"
+      },
       "0.3.11": {
         "en": "reconnect overworked",
         "de": "Reconnect überarbeitet"
