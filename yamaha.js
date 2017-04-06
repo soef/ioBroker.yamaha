@@ -345,12 +345,16 @@ function onConnectionTimeout() {
     refreshTimer.clearAndInhibit();
     adapter.log.debug('onConnectionTimeout: waiting for yamaha notification...');
     
+    function restart() {
+        if (peer === undefined) return;
+        adapter.log.debug('onConnectionTimeout: notification received!');
+        y5 && y5.restart(10000);
+    }
+    
     yamaha.discover(function(ip, name) {
         if (ip === adapter.config.ip) return restart();
         peer = yamaha.waitForNotify(adapter.config.ip, function (headers) {
-            if (peer === undefined) return;
-            adapter.log.debug('onConnectionTimeout: notification received!');
-            y5 && y5.restart(10000);
+            restart();
         });
     }, 2000);
     return true;
