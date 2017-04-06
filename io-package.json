@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.12",
+    "version": "0.3.14",
     "news": {
+      "0.3.14": {
+        "en": "Possible exception in reconnect fixed",
+        "de": "Mögliche Schutzverletzung beim reconnect behoben"
+      },
       "0.3.12": {
         "en": "Version incr. for npm",
         "de": "Version fr npm erhöht"
