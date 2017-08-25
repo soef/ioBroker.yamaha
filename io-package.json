@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.14",
+    "version": "0.3.15",
     "news": {
+      "0.3.15": {
+        "en": "Enhance CI testing",
+        "de": "CI testing erweitert"
+      },
       "0.3.14": {
         "en": "Possible exception in reconnect fixed",
         "de": "Mögliche Schutzverletzung beim reconnect behoben"
