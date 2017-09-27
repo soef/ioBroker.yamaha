@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "yamaha",
-    "version": "0.3.15",
+    "version": "0.3.16",
     "news": {
+      "0.3.16": {
+        "en": "node 0.12 removed from testing",
+        "de": "node 0.12 auf testing entfernt"
+      },
       "0.3.15": {
         "en": "Enhance CI testing",
         "de": "CI testing erweitert"
