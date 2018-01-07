@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "yamaha",
-        "version": "0.3.17",
+        "version": "0.3.18",
         "news": {
+            "0.3.18": {
+                "en": "Update utils.js and usage, CI Testing and deps (Apollon77)",
+                "de": "utils.js und Benutzung erneuert, CI Testing (Apollon77)"
+            },
             "0.3.17": {
                 "en": "update basic package-file testing (Apollon77)",
                 "de": "Erweiterung der Tests (Apollon77)"
