@@ -20,7 +20,7 @@ function closePeer() {
     }
 }
 
-var adapter = utils.adapter({
+var adapter = utils.Adapter({
     name: 'yamaha',
 
     unload: function (callback) {
