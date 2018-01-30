@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "yamaha",
-        "version": "0.3.18",
+        "version": "0.3.19",
         "news": {
+            "0.3.19": {
+                "en": "Changelog added to readme",
+                "de": "Changelog der readme hinzugefügt"
+            },
             "0.3.18": {
                 "en": "Update utils.js and usage, CI Testing and deps (Apollon77)",
                 "de": "utils.js und Benutzung erneuert, CI Testing (Apollon77)"
