@@ -26,12 +26,12 @@
     "request": "^2.40.0",
     "soef": "^0.2.1",
     "y5": "^0.2.0",
-    "yamaha-nodejs-soef": "^0.7.0"
+    "yamaha-nodejs-soef": "^0.7.0",
+    "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
     "mocha": "^4.1.0",
-    "chai": "^4.1.2",
-    "@iobroker/adapter-core": "^1.0.3"
+    "chai": "^4.1.2"
   },
   "repository": {
     "type": "git",
