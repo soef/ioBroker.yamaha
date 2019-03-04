@@ -1,6 +1,6 @@
 "use strict";
 
-var utils = require(__dirname + '/lib/utils');
+var utils = require('@iobroker/adapter-core');
 var soef = require('soef'),
     devices = new soef.Devices(),
     YAMAHA = require("yamaha-nodejs-soef"),
